@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bé Vui Học Toán - Random Vòng Lặp</title>
+    <title>Bé Vui Học Toán - Fix ReferenceError</title>
     
     <!-- Libraries -->
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
@@ -334,27 +334,6 @@
             );
         };
 
-        const ResultScreen = ({ score, TOTAL_QUESTIONS, goHome, startQuiz }) => {
-            const isPerfect = score === TOTAL_QUESTIONS;
-            return (
-                <div className="flex flex-col items-center justify-center h-full p-6 text-center animate-in zoom-in duration-500 bg-white">
-                    <div className="mb-8 md:mb-12 relative">
-                        <Icons.Trophy size={120} className={`${isPerfect ? 'text-yellow-400' : 'text-gray-300'} animate-bounce md:w-48 md:h-48`} />
-                        <Icons.Star className="absolute -top-2 -right-2 text-yellow-300 fill-current animate-ping" size={32} />
-                    </div>
-                    <h2 className={`text-3xl md:text-6xl font-black mb-4 md:mb-8 uppercase tracking-tight ${isPerfect ? 'text-yellow-500' : 'text-blue-500'}`}>{isPerfect ? "THIÊN TÀI TOÁN HỌC!" : "CỐ GẮNG NHÉ!"}</h2>
-                    <div className="bg-gray-50 p-8 md:p-12 rounded-[3rem] shadow-xl mb-10 w-full max-w-[220px] md:max-w-md border-t-8 border-blue-500">
-                        <p className="text-gray-400 text-xs md:text-lg font-black mb-1 uppercase tracking-widest">Điểm của bé</p>
-                        <div className="flex items-center justify-center"><span className="text-6xl md:text-[10rem] font-black text-gray-800 leading-none">{score}</span><span className="text-3xl md:text-6xl font-black text-gray-300 ml-2">/{TOTAL_QUESTIONS}</span></div>
-                    </div>
-                    <div className="flex flex-col md:flex-row gap-4 w-full max-w-[200px] md:max-w-lg">
-                        <button onClick={goHome} className="py-4 md:py-6 bg-gray-100 hover:bg-gray-200 rounded-2xl md:rounded-3xl font-black text-gray-500 text-sm md:text-xl uppercase flex-1 active:scale-95 transition-all">Menu</button>
-                        <button onClick={startQuiz} className="py-4 md:py-6 bg-blue-600 text-white rounded-2xl md:rounded-3xl font-black shadow-lg text-sm md:text-xl uppercase flex-1 active:scale-95 border-b-4 border-blue-900 hover:bg-blue-700 transition-all">Làm lại</button>
-                    </div>
-                </div>
-            );
-        };
-
         // ==========================================
         // 4. MAIN APPLICATION
         // ==========================================
@@ -366,7 +345,7 @@
             const [questionCount, setQuestionCount] = useState(0);
             const [currentQuestion, setCurrentQuestion] = useState(null);
             const [feedback, setFeedback] = useState(null);
-            const [isRandomMode, setIsRandomMode] = useState(true); // Default to Random mode
+            const [isRandomMode, setIsRandomMode] = useState(false); // Default to Random mode
             
             // Layout & Scaling States
             const [appSizeId, setAppSizeId] = useState('md');
@@ -431,7 +410,8 @@
                     containerGap: `${24 * s}px`
                 };
             };
-
+            
+            // Fix ReferenceError
             const appFrameClass = getAppFrameClasses();
             const dynStyle = getDynamicSizeStyles();
 
@@ -610,22 +590,6 @@
                                     </div>
                                 </div>
                             )}
-                            
-                            {screen === 'quiz' && (
-                                <QuizScreen 
-                                    goHome={() => setScreen('menu')} 
-                                    score={score} 
-                                    questionCount={questionCount} 
-                                    TOTAL_QUESTIONS={10} 
-                                    currentQuestion={currentQuestion} 
-                                    feedback={feedback} 
-                                    handleAnswer={handleAnswer} 
-                                    openSettings={() => setIsSettingsOpen(!isSettingsOpen)}
-                                    isSettingsOpen={isSettingsOpen}
-                                    dynStyle={dynStyle}
-                                />
-                            )}
-                            {screen === 'result' && <ResultScreen score={score} TOTAL_QUESTIONS={10} goHome={() => setScreen('menu')} startQuiz={() => {setScore(0); setQuestionCount(0); setFeedback(null); setCurrentQuestion(generateQuestionData()); setScreen('quiz');}} />}
                             
                             {/* BẢNG CÀI ĐẶT NỔI TOÀN CỤC */}
                             <SettingsPanel 
