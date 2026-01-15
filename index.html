@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bé Vui Học Toán - Thu gọn đáp án</title>
+    <title>Bé Vui Học Toán - Random Vòng Lặp</title>
     
     <!-- Libraries -->
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
@@ -51,10 +51,29 @@
             margin-top: -8px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
+        
+        /* Loading Spinner Animation */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid #3b82f6;
+            width: 40px;
+            height: 40px;
+            -webkit-animation: spin 1s linear infinite; /* Safari */
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <!-- Thêm trạng thái Loading mặc định -->
+    <div id="root" class="h-screen w-full flex flex-col items-center justify-center gap-4 text-gray-400">
+        <div class="loader"></div>
+        <p class="font-bold text-sm animate-pulse">Đang tải Bé Vui Học Toán...</p>
+    </div>
 
     <script type="text/babel">
         const { useState, useEffect, useCallback, useRef } = React;
@@ -89,6 +108,8 @@
             Monitor: (p) => <Icon {...p} path={<><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></>} />,
             Layers: (p) => <Icon {...p} path={<><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></>} />,
             Crop: (p) => <Icon {...p} path={<><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></>} />,
+            Shuffle: (p) => <Icon {...p} path={<><polyline points="16 3 21 3 21 8"/><line x1="4" x2="21" y1="20" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" x2="21" y1="15" y2="21"/><line x1="4" x2="9" y1="4" y2="9"/></>} />,
+            SortNumeric: (p) => <Icon {...p} path={<><path d="M4 6h9"/><path d="M4 12h9"/><path d="M4 18h9"/><path d="M19 5a2.5 2.5 0 0 1 0 5H17"/><path d="M17 14h2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-2v-6"/></>} />,
         };
 
         // ==========================================
@@ -100,16 +121,19 @@
             </div>
         );
 
-        const CircleButton = ({ icon, onClick, active, color = "blue", disabled }) => (
-            <button 
-                onClick={onClick} disabled={disabled}
-                className={`p-2.5 md:p-3.5 rounded-full transition-all active:scale-90 shadow-sm
-                ${disabled ? 'bg-gray-50 text-gray-200' : 
-                  active ? `bg-${color}-100 text-${color}-600 shadow-inner` : `bg-${color}-500 text-white hover:bg-${color}-600 shadow-${color}-200`}
-                `}
-            >
-                {icon}
-            </button>
+        const CircleButton = ({ icon, onClick, active, color = "blue", disabled, label }) => (
+            <div className="flex flex-col items-center gap-1">
+                <button 
+                    onClick={onClick} disabled={disabled}
+                    className={`p-2.5 md:p-3.5 rounded-full transition-all active:scale-90 shadow-sm
+                    ${disabled ? 'bg-gray-50 text-gray-200' : 
+                      active ? `bg-${color}-100 text-${color}-600 shadow-inner ring-2 ring-${color}-200` : `bg-${color}-500 text-white hover:bg-${color}-600 shadow-${color}-200`}
+                    `}
+                >
+                    {icon}
+                </button>
+                {label && <span className="text-[8px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wide">{label}</span>}
+            </div>
         );
 
         const TableSelector = ({ current, onSelect }) => (
@@ -342,6 +366,7 @@
             const [questionCount, setQuestionCount] = useState(0);
             const [currentQuestion, setCurrentQuestion] = useState(null);
             const [feedback, setFeedback] = useState(null);
+            const [isRandomMode, setIsRandomMode] = useState(true); // Default to Random mode
             
             // Layout & Scaling States
             const [appSizeId, setAppSizeId] = useState('md');
@@ -357,6 +382,7 @@
             const [checkStatus, setCheckStatus] = useState(null);
             const [stats, setStats] = useState({ correct: 0, incorrect: 0 });
             const [isPlaying, setIsPlaying] = useState(false);
+            const shuffledQueueRef = useRef([]);
 
             // Mapper cho Khung ngoài (App Container)
             const getAppFrameClasses = () => {
@@ -412,11 +438,35 @@
             const nextStudyCalculation = useCallback(() => {
                 if (selectedTable === 'all') setCurrentDisplayTable(Math.floor(Math.random() * 8) + 2);
                 else setCurrentDisplayTable(selectedTable);
+
                 setStudyFactor((prev) => {
-                    let next; do { next = Math.floor(Math.random() * 10) + 1; } while (next === prev); return next;
+                    if (isRandomMode) {
+                        // Logic tạo số ngẫu nhiên theo vòng lặp (không trùng lặp cho đến khi hết vòng)
+                        if (shuffledQueueRef.current.length === 0) {
+                            // Tạo mảng mới [1..10]
+                            const newQueue = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+                            // Fisher-Yates Shuffle
+                            for (let i = newQueue.length - 1; i > 0; i--) {
+                                const j = Math.floor(Math.random() * (i + 1));
+                                [newQueue[i], newQueue[j]] = [newQueue[j], newQueue[i]];
+                            }
+                            
+                            // Tránh trường hợp số vừa học (prev) trùng với số tiếp theo (cuối mảng vì dùng pop)
+                            // Nếu trùng thì đổi chỗ với phần tử đầu tiên
+                            if (newQueue[newQueue.length - 1] === prev) {
+                                [newQueue[0], newQueue[newQueue.length - 1]] = [newQueue[newQueue.length - 1], newQueue[0]];
+                            }
+                            
+                            shuffledQueueRef.current = newQueue;
+                        }
+                        return shuffledQueueRef.current.pop();
+                    } else {
+                        // Logic tuần tự cũ
+                        return prev >= 10 ? 1 : prev + 1;
+                    }
                 });
                 setUserAnswer(''); setCheckStatus(null);
-            }, [selectedTable]);
+            }, [selectedTable, isRandomMode]);
 
             const generateQuestionData = () => {
                 const n1 = Math.floor(Math.random() * 8) + 2;
@@ -523,7 +573,8 @@
                                                         <button onClick={() => { setIsInputMode(false); setStats({correct:0, incorrect:0}); }} className="text-gray-300 font-bold py-1 text-[8px] md:text-[10px] uppercase text-center hover:text-red-500">Quay lại xem</button>
                                                     </div>
                                                 ) : (
-                                                    <div className="flex flex-col justify-center h-full w-full gap-4 md:gap-8 animate-in fade-in">
+                                                    <div className="flex flex-col justify-center h-full w-full gap-3 md:gap-6 animate-in fade-in">
+                                                        {/* Time limit block */}
                                                         <div className="flex items-center justify-between bg-white px-4 py-3 md:py-4 rounded-3xl border border-gray-100 shadow-sm w-full">
                                                             <div className="flex items-center gap-2"><Icons.Clock size={20} className="text-orange-400" /><span className="font-bold text-gray-500 text-[10px] md:text-sm uppercase tracking-wide">Thời gian</span></div>
                                                             <div className="flex items-center gap-2">
@@ -531,14 +582,27 @@
                                                                 <button onClick={() => setIsTimeLimitEnabled(!isTimeLimitEnabled)} className={`relative w-10 h-5 rounded-full transition-colors ${isTimeLimitEnabled ? 'bg-green-500' : 'bg-gray-200'}`}><div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${isTimeLimitEnabled ? 'translate-x-5' : 'translate-x-0'}`} /></button>
                                                             </div>
                                                         </div>
-                                                        <div className="flex items-center gap-2 md:gap-3 bg-white p-2 md:p-3 rounded-[2.5rem] shadow-lg border border-gray-100 w-full">
-                                                            <CircleButton icon={<Icons.Refresh size={20}/>} onClick={() => {setIsPlaying(false); nextStudyCalculation();}} color="blue" />
-                                                            <div className="w-px h-10 bg-gray-100 mx-1"></div>
-                                                            <CircleButton icon={<Icons.Play size={20} fill="currentColor"/>} onClick={() => setIsPlaying(true)} active={isPlaying} color="green" />
-                                                            <CircleButton icon={<Icons.Stop size={20} fill="currentColor"/>} onClick={() => setIsPlaying(false)} disabled={!isPlaying} color="red" />
-                                                            <div className="w-px h-10 bg-gray-100 mx-1"></div>
-                                                            <button onClick={() => {setIsPlaying(false); setIsInputMode(true);}} className="bg-blue-600 text-white px-4 md:px-6 py-3 md:py-5 rounded-full font-bold shadow-lg text-xs md:text-base uppercase flex-1 active:scale-95 transition-all">Kiểm tra</button>
+
+                                                        {/* Circle Buttons Row */}
+                                                        <div className="flex items-center justify-between px-2 md:px-6 bg-white py-3 rounded-[2rem] shadow-sm border border-gray-100 w-full">
+                                                            <CircleButton 
+                                                                icon={isRandomMode ? <Icons.Shuffle size={20}/> : <Icons.SortNumeric size={20}/>} 
+                                                                onClick={() => { setIsRandomMode(!isRandomMode); }} 
+                                                                active={false}
+                                                                color="purple"
+                                                                label={isRandomMode ? "Ngẫu nhiên" : "Tuần tự"}
+                                                            />
+                                                            <div className="w-px h-8 bg-gray-100"></div>
+                                                            <CircleButton icon={<Icons.Refresh size={20}/>} onClick={() => {setIsPlaying(false); nextStudyCalculation();}} color="blue" label="Đổi số"/>
+                                                            <div className="w-px h-8 bg-gray-100"></div>
+                                                            <CircleButton icon={<Icons.Play size={20} fill="currentColor"/>} onClick={() => setIsPlaying(true)} active={isPlaying} color="green" label="Tự chạy" />
+                                                            <CircleButton icon={<Icons.Stop size={20} fill="currentColor"/>} onClick={() => setIsPlaying(false)} disabled={!isPlaying} color="red" label="Dừng" />
                                                         </div>
+
+                                                        {/* Check Button Block */}
+                                                        <button onClick={() => {setIsPlaying(false); setIsInputMode(true);}} className="bg-blue-600 text-white w-full py-4 rounded-2xl font-black shadow-lg text-base md:text-xl uppercase active:scale-95 transition-all border-b-4 border-blue-800 hover:bg-blue-700 flex items-center justify-center gap-2">
+                                                            <Icons.Check size={24} /> Kiểm tra ngay
+                                                        </button>
                                                     </div>
                                                 )}
                                             </div>
