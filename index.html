@@ -1,612 +1,613 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bé Vui Học Toán - Fix ReferenceError</title>
-    
-    <!-- Libraries -->
-    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
-
-    <style>
-        body {
-            font-family: 'Nunito', sans-serif;
-            background-color: #F0F4F8;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* Hiệu ứng mượt mà khi co giãn */
-        .sync-scale {
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
-
-        /* Tùy chỉnh thanh kéo trượt */
-        input[type=range] {
-            -webkit-appearance: none;
-            width: 100%;
-            background: transparent;
-        }
-        input[type=range]:focus { outline: none; }
-        input[type=range]::-webkit-slider-runnable-track {
-            width: 100%;
-            height: 8px;
-            cursor: pointer;
-            background: #E2E8F0;
-            border-radius: 4px;
-        }
-        input[type=range]::-webkit-slider-thumb {
-            height: 24px;
-            width: 24px;
-            border-radius: 50%;
-            background: #3B82F6;
-            cursor: pointer;
-            -webkit-appearance: none;
-            margin-top: -8px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-        
-        /* Loading Spinner Animation */
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-radius: 50%;
-            border-top: 4px solid #3b82f6;
-            width: 40px;
-            height: 40px;
-            -webkit-animation: spin 1s linear infinite; /* Safari */
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Bé Vui Học Toán - Kiến Trúc 7 Khối</title>
+<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+body { font-family: 'Nunito', sans-serif; background-color: #F0F4F8; user-select: none; overflow: hidden; -webkit-tap-highlight-color: transparent; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.sync-scale { transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
+input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+input[type=range]::-webkit-slider-runnable-track { height: 8px; background: #E2E8F0; border-radius: 4px; }
+input[type=range]::-webkit-slider-thumb { height: 24px; width: 24px; border-radius: 50%; background: #3B82F6; -webkit-appearance: none; margin-top: -8px; }
+</style>
 </head>
 <body>
-    <!-- Thêm trạng thái Loading mặc định -->
-    <div id="root" class="h-screen w-full flex flex-col items-center justify-center gap-4 text-gray-400">
-        <div class="loader"></div>
-        <p class="font-bold text-sm animate-pulse">Đang tải Bé Vui Học Toán...</p>
-    </div>
-
-    <script type="text/babel">
-        const { useState, useEffect, useCallback, useRef } = React;
-
-        // ==========================================
-        // 1. ICONS BLOCK
-        // ==========================================
-        function Icon({ path, size = 24, className = "", fill = "none" }) {
-            return (
-                <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>{path}</svg>
-            );
-        }
-
-        const Icons = {
-            Star: (p) => <Icon {...p} path={<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />} />,
-            BookOpen: (p) => <Icon {...p} path={<><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></>} />,
-            Brain: (p) => <Icon {...p} path={<><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></>} />,
-            ArrowLeft: (p) => <Icon {...p} path={<><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></>} />,
-            Refresh: (p) => <Icon {...p} path={<><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></>} />,
-            Check: (p) => <Icon {...p} path={<polyline points="20 6 9 17 4 12"/>} />,
-            X: (p) => <Icon {...p} path={<><path d="M18 6 6 18"/><path d="m6 6 12 12"/></>} />,
-            Play: (p) => <Icon {...p} path={<polygon points="5 3 19 12 5 21 5 3"/>} />,
-            Stop: (p) => <Icon {...p} path={<rect width="18" height="18" x="3" y="3" rx="2" />} />,
-            Delete: (p) => <Icon {...p} path={<path d="M20 5H9l-7 7 7 7h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Z"/>} />,
-            Settings: (p) => <Icon {...p} path={<><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></>} />,
-            Clock: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>} />,
-            Sigma: (p) => <Icon {...p} path={<path d="M18 6H5a2 2 0 0 0 0 4h8v4H5a2 2 0 0 0 0 4h13" />} />,
-            Trophy: (p) => <Icon {...p} path={<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6m12 5h1.5a2.5 2.5 0 0 0 0-5H18m-8 10v2c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22h10c0-1.76-.85-3.25-2.03-3.79-.5-.23-.97-.66-.97-1.21v-2m4-12H6v7a6 6 0 0 0 12 0V2Z" />} />,
-            ThumbsUp: (p) => <Icon {...p} path={<><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z"/></>} />,
-            ThumbsDown: (p) => <Icon {...p} path={<><path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22h0a3.13 3.13 0 0 1-3-3.88Z"/></>} />,
-            XCircle: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></>} />,
-            Monitor: (p) => <Icon {...p} path={<><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></>} />,
-            Layers: (p) => <Icon {...p} path={<><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></>} />,
-            Crop: (p) => <Icon {...p} path={<><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></>} />,
-            Shuffle: (p) => <Icon {...p} path={<><polyline points="16 3 21 3 21 8"/><line x1="4" x2="21" y1="20" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" x2="21" y1="15" y2="21"/><line x1="4" x2="9" y1="4" y2="9"/></>} />,
-            SortNumeric: (p) => <Icon {...p} path={<><path d="M4 6h9"/><path d="M4 12h9"/><path d="M4 18h9"/><path d="M19 5a2.5 2.5 0 0 1 0 5H17"/><path d="M17 14h2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-2v-6"/></>} />,
-        };
-
-        // ==========================================
-        // 2. ATOMS & SMALL BLOCKS
-        // ==========================================
-        const Badge = ({ children, color = "blue" }) => (
-            <div className={`px-2 py-0.5 rounded-full border border-${color}-100 bg-${color}-50 text-${color}-600 text-[10px] md:text-xs font-bold shadow-sm inline-block`}>
-                {children}
-            </div>
-        );
-
-        const CircleButton = ({ icon, onClick, active, color = "blue", disabled, label }) => (
-            <div className="flex flex-col items-center gap-1">
-                <button 
-                    onClick={onClick} disabled={disabled}
-                    className={`p-2.5 md:p-3.5 rounded-full transition-all active:scale-90 shadow-sm
-                    ${disabled ? 'bg-gray-50 text-gray-200' : 
-                      active ? `bg-${color}-100 text-${color}-600 shadow-inner ring-2 ring-${color}-200` : `bg-${color}-500 text-white hover:bg-${color}-600 shadow-${color}-200`}
-                    `}
-                >
-                    {icon}
-                </button>
-                {label && <span className="text-[8px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wide">{label}</span>}
-            </div>
-        );
-
-        const TableSelector = ({ current, onSelect }) => (
-            <div className="flex justify-center items-center gap-1.5 overflow-x-auto no-scrollbar py-2 px-4 bg-white/50 border-b border-gray-100">
-                {[2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-                    <button
-                        key={num} onClick={() => onSelect(num)}
-                        className={`flex-shrink-0 w-8 h-8 md:w-9 md:h-9 rounded-lg font-black text-xs transition-all border
-                        ${current === num ? 'bg-blue-600 text-white border-blue-600 scale-105 shadow-md' : 'bg-white text-gray-400 border-gray-100 hover:bg-gray-50'}`}
-                    >
-                        {num}
-                    </button>
-                ))}
-                <button
-                    onClick={() => onSelect('all')}
-                    className={`flex-shrink-0 w-8 h-8 md:w-9 md:h-9 rounded-lg font-black text-xs transition-all border flex items-center justify-center
-                    ${current === 'all' ? 'bg-purple-600 text-white border-purple-600 scale-105 shadow-md' : 'bg-white text-purple-400 border-purple-100 hover:bg-purple-50'}`}
-                >
-                    <Icons.Sigma size={16} />
-                </button>
-            </div>
-        );
-
-        // ==========================================
-        // 3. SETTINGS PANEL (Thêm chọn tỉ lệ 3:4, 1:1, etc)
-        // ==========================================
-        const SettingsPanel = ({ isOpen, onClose, scale, setScale, currentAppSizeId, setAppSizeId, ratioMode, setRatioMode }) => {
-            if (!isOpen) return null;
-            const appSizes = [
-                { id: 'xs', label: 'X' }, { id: 'sm', label: 'S' }, { id: 'md', label: 'M' }, { id: 'full', label: 'Full' },
-            ];
-            const ratioOptions = [
-                { id: '3:4', label: '3:4', desc: 'Dọc' },
-                { id: '1:1', label: '1:1', desc: 'Vuông' },
-                { id: '4:3', label: '4:3', desc: 'Ngang' },
-                { id: '16:9', label: '16:9', desc: 'Rộng' },
-            ];
-
-            return (
-                <div className="absolute top-16 right-4 z-[200] w-72 md:w-80 bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl border-2 border-blue-50 animate-in slide-in-from-top-4 fade-in duration-300 overflow-hidden">
-                    <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-blue-50/20">
-                        <div className="flex items-center gap-2 font-black text-blue-600 text-sm uppercase tracking-tighter">
-                            <Icons.Settings size={18} /> Cài đặt hiển thị
-                        </div>
-                        <button onClick={onClose} className="text-gray-400 hover:text-red-500 transition-colors">
-                            <Icons.XCircle size={24} />
-                        </button>
-                    </div>
-                    
-                    <div className="p-5 space-y-6">
-                        {/* Scale Slider */}
-                        <div>
-                            <div className="flex items-center justify-between mb-3">
-                                <h3 className="text-xs font-bold text-gray-500 uppercase flex items-center gap-2"><Icons.Layers size={14}/> Zoom thẻ:</h3>
-                                <span className="text-sm font-black text-blue-600">{scale}%</span>
-                            </div>
-                            <input 
-                                type="range" min="50" max="150" step="5" value={scale} 
-                                onChange={(e) => setScale(parseInt(e.target.value))}
-                                className="w-full"
-                            />
-                            <div className="flex justify-between mt-1 text-[10px] text-gray-300 font-bold">
-                                <span>NHỎ</span><span>CHUẨN</span><span>LỚN</span>
-                            </div>
-                        </div>
-
-                        {/* Aspect Ratio Selector */}
-                        <div>
-                            <h3 className="text-xs font-bold text-gray-500 uppercase flex items-center gap-2 mb-3"><Icons.Crop size={14}/> Tỉ lệ khung hình:</h3>
-                            <div className="grid grid-cols-4 gap-1.5">
-                                {ratioOptions.map((opt) => (
-                                    <button 
-                                        key={opt.id} onClick={() => setRatioMode(opt.id)} 
-                                        className={`p-2 rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-0.5
-                                        ${ratioMode === opt.id ? 'border-blue-500 bg-blue-50 text-blue-800 shadow-sm' : 'border-gray-100 bg-white text-gray-400 hover:bg-gray-50'}`}
-                                    >
-                                        <span className="text-[10px] font-black">{opt.label}</span>
-                                        <span className="text-[8px] font-medium opacity-70">{opt.desc}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* App Frame Size */}
-                        <div>
-                            <h3 className="text-xs font-bold text-gray-500 uppercase flex items-center gap-2 mb-3"><Icons.Monitor size={14}/> Khung ứng dụng:</h3>
-                            <div className="grid grid-cols-4 gap-1.5">
-                                {appSizes.map((opt) => (
-                                    <button 
-                                        key={opt.id} onClick={() => setAppSizeId(opt.id)} 
-                                        className={`p-2 rounded-xl border-2 transition-all text-[10px] font-black ${currentAppSizeId === opt.id ? 'border-blue-500 bg-blue-50 text-blue-800 shadow-sm' : 'border-gray-100 bg-white text-gray-400'}`}
-                                    >
-                                        {opt.label}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
-        // ==========================================
-        // 4. ORGANISMS & SCREENS
-        // ==========================================
-        const FlashCard = ({ table, factor, isInputMode, userAnswer, checkStatus, isPlaying, sizeStyle }) => (
-            <div 
-                style={sizeStyle.card}
-                className={`bg-white rounded-[2rem] shadow-lg border border-gray-100 flex flex-col items-center justify-center sync-scale relative overflow-hidden ${isPlaying ? 'ring-4 ring-green-50 scale-[1.02]' : ''}`}
-            >
-                <div className="flex items-center justify-center flex-1 w-full">
-                    <span style={sizeStyle.number} className="font-black text-gray-800 leading-none transition-all">{table}</span>
-                    <span style={sizeStyle.operator} className="text-gray-200 font-light mx-2 md:mx-4 transition-all">×</span>
-                    <span style={sizeStyle.number} className="font-black text-blue-600 leading-none transition-all">{factor}</span>
-                </div>
-                
-                {/* Decor divider */}
-                <div className="w-full px-8 opacity-50"><div className="w-full h-0.5 bg-gray-50"></div></div>
-
-                <div className="flex items-center justify-center flex-1 w-full relative">
-                    <span style={sizeStyle.operator} className="text-gray-200 font-light transition-all absolute left-6 md:left-8">=</span>
-                    {isInputMode ? (
-                        <div style={{...sizeStyle.number, ...sizeStyle.inputWidth}} className={`font-black text-center border-b-2 md:border-b-4 border-dashed leading-none mx-2 md:mx-4 transition-all ${checkStatus === 'correct' ? 'text-green-500 border-green-500' : checkStatus === 'incorrect' ? 'text-red-500 border-red-500' : 'text-blue-600 border-blue-100'}`}>
-                            {userAnswer || '?'}
-                        </div>
-                    ) : (
-                        <span style={sizeStyle.number} className="font-black text-green-500 leading-none transition-all">{table * factor}</span>
-                    )}
-                </div>
-                {checkStatus && (
-                    <div style={sizeStyle.feedbackText} className="absolute bottom-4 font-black animate-in fade-in slide-in-from-bottom-2 transition-all w-full text-center">
-                        <span className={`px-4 py-1 rounded-full ${checkStatus === 'correct' ? 'bg-green-100 text-green-600' : 'bg-red-50 text-red-500'}`}>
-                            {checkStatus === 'correct' ? 'CHÍNH XÁC!' : `ĐÁP ÁN LÀ ${table * factor}`}
-                        </span>
-                    </div>
-                )}
-            </div>
-        );
-
-        const MenuScreen = ({ startStudy, startQuiz, openSettings }) => (
-            <div className="flex flex-col items-center justify-center min-h-full space-y-8 md:space-y-12 animate-in fade-in zoom-in duration-500 p-6 relative overflow-y-auto">
-                <button onClick={openSettings} className="absolute top-4 right-4 p-2.5 bg-white shadow-sm hover:shadow-md rounded-full text-gray-400 hover:text-blue-600 transition-all border border-gray-100 z-20">
-                    <Icons.Settings size={22} />
-                </button>
-                <div className="text-center px-4">
-                    <h1 className="text-4xl md:text-7xl font-black text-blue-600 drop-shadow-sm mb-2 leading-tight tracking-tight">Bé Vui Học Toán</h1>
-                    <p className="text-sm md:text-xl text-gray-400 font-medium uppercase tracking-widest">Cùng bé giỏi toán mỗi ngày 🚀</p>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-8 w-full max-w-3xl px-4">
-                    <button onClick={startStudy} className="group flex flex-col items-center justify-center p-6 md:p-10 bg-white rounded-[2.5rem] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all border border-gray-100 hover:border-green-100">
-                        <div className="bg-green-50 p-4 md:p-6 rounded-full mb-4 group-hover:bg-green-100 transition-colors">
-                            <Icons.BookOpen size={36} className="text-green-600 md:w-12 md:h-12" />
-                        </div>
-                        <span className="text-xl md:text-3xl font-black text-gray-800">Học Bài</span>
-                        <span className="text-xs md:text-base text-gray-400 mt-1">Xem & Tự giải</span>
-                    </button>
-                    <button onClick={startQuiz} className="group flex flex-col items-center justify-center p-6 md:p-10 bg-white rounded-[2.5rem] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all border border-gray-100 hover:border-orange-100">
-                        <div className="bg-orange-50 p-4 md:p-6 rounded-full mb-4 group-hover:bg-orange-100 transition-colors">
-                            <Icons.Brain size={36} className="text-orange-600 md:w-12 md:h-12" />
-                        </div>
-                        <span className="text-xl md:text-3xl font-black text-gray-800">Luyện Tập</span>
-                        <span className="text-xs md:text-base text-gray-400 mt-1">Trắc nghiệm nhanh</span>
-                    </button>
-                </div>
-            </div>
-        );
-
-        const QuizScreen = ({ goHome, score, questionCount, TOTAL_QUESTIONS, currentQuestion, feedback, handleAnswer, openSettings, isSettingsOpen, dynStyle }) => {
-            if (!currentQuestion) return null;
-            return (
-                <div className="flex flex-col h-full overflow-hidden">
-                    <div className="pt-3 pb-2 px-4 bg-white/80 backdrop-blur-sm z-10 border-b border-gray-100 flex items-center justify-between shadow-sm">
-                        <button onClick={goHome} className="p-1.5 bg-gray-50 hover:bg-gray-100 rounded-lg transition-all"><Icons.ArrowLeft size={20} className="text-gray-600" /></button>
-                        <h2 className="text-xs md:text-base font-black text-gray-500 uppercase tracking-widest">CÂU {questionCount + 1}/{TOTAL_QUESTIONS}</h2>
-                        <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-2 mr-2"><Icons.ThumbsUp size={16} className="text-green-500"/><span className="font-black text-green-600 text-sm">{score}</span></div>
-                            <button onClick={openSettings} className={`p-1.5 shadow-sm border rounded-lg transition-all active:scale-90 ${isSettingsOpen ? 'bg-blue-600 text-white' : 'bg-white text-blue-500 border-gray-100'}`}><Icons.Settings size={20} /></button>
-                        </div>
-                    </div>
-                    <div className="flex-1 overflow-y-auto p-4 md:p-8 no-scrollbar bg-[#F8FAFC] flex flex-col items-center justify-center">
-                        <div className="bg-white p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] shadow-lg w-full max-w-[240px] md:max-w-md text-center relative overflow-hidden border border-gray-100">
-                            {feedback === 'correct' && <div className="absolute inset-0 bg-green-500/90 flex items-center justify-center animate-in fade-in"><Icons.Check size={80} className="text-white animate-bounce" /></div>}
-                            {feedback === 'incorrect' && <div className="absolute inset-0 bg-red-500/90 flex flex-col items-center justify-center animate-in fade-in p-4"><Icons.X size={80} className="text-white animate-pulse" /><p className="text-white font-black mt-2 text-xl">ĐÁP ÁN: {currentQuestion.correctAnswer}</p></div>}
-                            <span className="text-[10px] md:text-sm text-gray-300 font-black mb-2 block uppercase tracking-widest italic">Tính nhanh nào ⚡</span>
-                            {/* Dùng dynStyle cho cỡ chữ câu hỏi */}
-                            <div style={{ fontSize: `calc(${dynStyle.number.fontSize} * 1.5)` }} className="font-black text-gray-800 leading-none transition-all">{currentQuestion.num1} <span className="text-orange-500 italic px-2">×</span> {currentQuestion.num2}</div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2 md:gap-4 w-full max-w-[280px] md:max-w-xl mt-4 md:mt-6">
-                            {currentQuestion.answers.map((ans, idx) => (
-                                <button key={idx} onClick={() => handleAnswer(ans)} disabled={feedback !== null}
-                                    style={{ fontSize: `calc(${dynStyle.number.fontSize} * 0.5)` }}
-                                    className={`py-3 md:py-6 rounded-xl md:rounded-[2rem] font-black transition-all shadow-md border-b-4 ${feedback ? 'bg-gray-50 text-gray-200 border-gray-100' : 'bg-white text-blue-600 hover:bg-blue-600 hover:text-white border-blue-50 active:translate-y-1 active:border-b-0'}`}
-                                >{ans}</button>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
-        // ==========================================
-        // 4. MAIN APPLICATION
-        // ==========================================
-        const App = () => {
-            const [screen, setScreen] = useState('menu'); 
-            const [selectedTable, setSelectedTable] = useState(2);
-            const [studyFactor, setStudyFactor] = useState(1);
-            const [score, setScore] = useState(0);
-            const [questionCount, setQuestionCount] = useState(0);
-            const [currentQuestion, setCurrentQuestion] = useState(null);
-            const [feedback, setFeedback] = useState(null);
-            const [isRandomMode, setIsRandomMode] = useState(false); // Default to Random mode
-            
-            // Layout & Scaling States
-            const [appSizeId, setAppSizeId] = useState('md');
-            const [scale, setScale] = useState(100); 
-            const [ratioMode, setRatioMode] = useState('3:4'); // '3:4', '1:1', '4:3', '16:9'
-
-            const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-            const [isTimeLimitEnabled, setIsTimeLimitEnabled] = useState(true);
-            const [timeLimitValue, setTimeLimitValue] = useState(7);
-            const [currentDisplayTable, setCurrentDisplayTable] = useState(2);
-            const [isInputMode, setIsInputMode] = useState(false);
-            const [userAnswer, setUserAnswer] = useState('');
-            const [checkStatus, setCheckStatus] = useState(null);
-            const [stats, setStats] = useState({ correct: 0, incorrect: 0 });
-            const [isPlaying, setIsPlaying] = useState(false);
-            const shuffledQueueRef = useRef([]);
-
-            // Mapper cho Khung ngoài (App Container)
-            const getAppFrameClasses = () => {
-                switch(appSizeId) {
-                    case 'xs': return 'max-w-xl h-[100dvh] md:h-[65vh] md:max-h-[600px] md:my-4';
-                    case 'sm': return 'max-w-2xl h-[100dvh] md:h-[75vh] md:max-h-[700px] md:my-4';
-                    case 'full': return 'max-w-full h-[100dvh] m-0 rounded-none border-none';
-                    default: return 'max-w-4xl h-[100dvh] md:h-[90vh] md:max-h-[850px] md:my-4';
-                }
-            };
-
-            // Hàm tính toán Size Styles - Logic mới hỗ trợ Tỉ lệ khung hình
-            const getDynamicSizeStyles = () => {
-                const s = scale / 100;
-                let baseW = 320; // Default width basis
-                let baseH = 430; // Default height basis
-
-                // Tính toán Base dimensions dựa trên Ratio Mode
-                switch (ratioMode) {
-                    case '1:1': baseW = 380; baseH = 380; break;
-                    case '4:3': baseW = 420; baseH = 315; break;
-                    case '16:9': baseW = 480; baseH = 270; break;
-                    case '3:4': 
-                    default: baseW = 320; baseH = 426; break;
-                }
-
-                // Apply Scale Factor
-                const finalW = baseW * s;
-                const finalH = baseH * s;
-
-                // Adjust font size based on the smaller dimension to prevent overflow
-                const minDim = Math.min(finalW, finalH);
-                
-                return {
-                    card: {
-                        width: `${finalW}px`,
-                        height: `${finalH}px`,
-                        // Loại bỏ maxWidth/minHeight cũ để force theo tỉ lệ
-                    },
-                    number: { fontSize: `${Math.min(80, minDim * 0.25)}px` }, // Auto scale font
-                    operator: { fontSize: `${Math.min(40, minDim * 0.15)}px` },
-                    inputWidth: { minWidth: `${finalW * 0.4}px` },
-                    feedbackText: { fontSize: `${Math.max(10, minDim * 0.04)}px` },
-                    keypadText: { fontSize: `${30 * s}px` },
-                    keypadBtnPadding: { padding: `${12 * s}px 0` },
-                    containerGap: `${24 * s}px`
-                };
-            };
-            
-            // Fix ReferenceError
-            const appFrameClass = getAppFrameClasses();
-            const dynStyle = getDynamicSizeStyles();
-
-            const nextStudyCalculation = useCallback(() => {
-                if (selectedTable === 'all') setCurrentDisplayTable(Math.floor(Math.random() * 8) + 2);
-                else setCurrentDisplayTable(selectedTable);
-
-                setStudyFactor((prev) => {
-                    if (isRandomMode) {
-                        // Logic tạo số ngẫu nhiên theo vòng lặp (không trùng lặp cho đến khi hết vòng)
-                        if (shuffledQueueRef.current.length === 0) {
-                            // Tạo mảng mới [1..10]
-                            const newQueue = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-                            // Fisher-Yates Shuffle
-                            for (let i = newQueue.length - 1; i > 0; i--) {
-                                const j = Math.floor(Math.random() * (i + 1));
-                                [newQueue[i], newQueue[j]] = [newQueue[j], newQueue[i]];
-                            }
-                            
-                            // Tránh trường hợp số vừa học (prev) trùng với số tiếp theo (cuối mảng vì dùng pop)
-                            // Nếu trùng thì đổi chỗ với phần tử đầu tiên
-                            if (newQueue[newQueue.length - 1] === prev) {
-                                [newQueue[0], newQueue[newQueue.length - 1]] = [newQueue[newQueue.length - 1], newQueue[0]];
-                            }
-                            
-                            shuffledQueueRef.current = newQueue;
-                        }
-                        return shuffledQueueRef.current.pop();
-                    } else {
-                        // Logic tuần tự cũ
-                        return prev >= 10 ? 1 : prev + 1;
-                    }
-                });
-                setUserAnswer(''); setCheckStatus(null);
-            }, [selectedTable, isRandomMode]);
-
-            const generateQuestionData = () => {
-                const n1 = Math.floor(Math.random() * 8) + 2;
-                const n2 = Math.floor(Math.random() * 10) + 1;
-                const correct = n1 * n2;
-                let ans = [correct];
-                while(ans.length < 4) {
-                    let w = Math.random() > 0.5 ? correct + Math.floor(Math.random()*5)+1 : Math.max(1, correct - Math.floor(Math.random()*5)-1);
-                    if(!ans.includes(w)) ans.push(w);
-                }
-                return { num1: n1, num2: n2, correctAnswer: correct, answers: ans.sort(() => Math.random() - 0.5) };
-            };
-
-            const handleAnswer = (val) => {
-                if(feedback) return;
-                const isCorrect = val === currentQuestion.correctAnswer;
-                if(isCorrect) { setScore(score + 1); setFeedback('correct'); } else setFeedback('incorrect');
-                setTimeout(() => {
-                    if(questionCount + 1 >= 10) setScreen('result');
-                    else { setQuestionCount(questionCount + 1); setFeedback(null); setCurrentQuestion(generateQuestionData()); }
-                }, 1500);
-            };
-
-            const handleSubmitStudy = () => {
-                if (!userAnswer || checkStatus) return;
-                if (parseInt(userAnswer) === currentDisplayTable * studyFactor) {
-                    setCheckStatus('correct'); setStats(p => ({...p, correct: p.correct + 1}));
-                } else {
-                    setCheckStatus('incorrect'); setStats(p => ({...p, incorrect: p.incorrect + 1}));
-                }
-                setTimeout(nextStudyCalculation, 1200);
-            };
-
-            useEffect(() => {
-                let interval;
-                if (isPlaying) {
-                    interval = setInterval(nextStudyCalculation, 3000);
-                } else if (isInputMode && isTimeLimitEnabled && !userAnswer && !checkStatus) {
-                    interval = setInterval(() => {
-                        // Logic mới: Hết giờ -> Tính Sai -> Hiện đáp án -> Chuyển câu
-                        setStats(prev => ({...prev, incorrect: prev.incorrect + 1}));
-                        setCheckStatus('incorrect');
-                        setTimeout(() => {
-                            nextStudyCalculation();
-                        }, 1500); 
-                    }, timeLimitValue * 1000);
-                }
-                return () => clearInterval(interval);
-            }, [isPlaying, isInputMode, isTimeLimitEnabled, timeLimitValue, userAnswer, checkStatus, nextStudyCalculation]);
-
-            return (
-                <div className="min-h-[100dvh] bg-[#F0F4F8] flex items-center justify-center p-0 md:p-4 overflow-hidden">
-                    <div className={`w-full ${appFrameClass} bg-white md:rounded-[3rem] shadow-2xl relative overflow-hidden border-2 md:border-[12px] border-white app-container-sync flex flex-col`}>
-                        <div className="absolute inset-0 opacity-[0.015] pointer-events-none">
-                            <div className="absolute top-10 left-10 rotate-12"><Icons.Star size={150} /></div>
-                            <div className="absolute bottom-40 right-10 -rotate-12"><Icons.Brain size={250} /></div>
-                        </div>
-
-                        <div className="relative z-10 flex-1 overflow-hidden flex flex-col">
-                            {screen === 'menu' && (
-                                <MenuScreen 
-                                    startStudy={() => {setStudyFactor(1); setIsInputMode(false); setScreen('study'); nextStudyCalculation();}} 
-                                    startQuiz={() => {setScore(0); setQuestionCount(0); setFeedback(null); setCurrentQuestion(generateQuestionData()); setScreen('quiz');}} 
-                                    openSettings={() => setIsSettingsOpen(true)} 
-                                />
-                            )}
-                            
-                            {screen === 'study' && (
-                                <div className="flex flex-col h-full overflow-hidden animate-in fade-in duration-500">
-                                    <div className="pt-3 pb-2 px-4 bg-white/80 backdrop-blur-sm z-10 border-b border-gray-100 flex items-center justify-between shadow-sm">
-                                        <button onClick={() => setScreen('menu')} className="p-1.5 bg-gray-50 hover:bg-gray-100 rounded-lg transition-all"><Icons.ArrowLeft size={20} className="text-gray-600" /></button>
-                                        <h2 className="text-[10px] md:text-sm font-black text-gray-500 uppercase tracking-widest">{selectedTable === 'all' ? "TỔNG HỢP" : `BẢNG NHÂN ${selectedTable}`}</h2>
-                                        <button onClick={() => setIsSettingsOpen(!isSettingsOpen)} className={`p-1.5 shadow-sm border rounded-lg transition-all active:scale-90 ${isSettingsOpen ? 'bg-blue-600 text-white' : 'bg-white text-blue-500 border-gray-100'}`}><Icons.Settings size={20} /></button>
-                                    </div>
-                                    <TableSelector current={selectedTable} onSelect={(t) => { setSelectedTable(t); nextStudyCalculation(); }} />
-                                    
-                                    <div className="flex-1 overflow-y-auto p-4 md:p-6 no-scrollbar bg-[#F8FAFC] flex flex-col items-center justify-center relative">
-                                        <div 
-                                            style={{ gap: dynStyle.containerGap }}
-                                            className={`flex flex-col md:flex-row items-center md:items-stretch justify-center w-full transition-all duration-500`}
-                                        >
-                                            <FlashCard 
-                                                table={currentDisplayTable} factor={studyFactor} 
-                                                isInputMode={isInputMode} userAnswer={userAnswer} 
-                                                checkStatus={checkStatus} isPlaying={isPlaying}
-                                                sizeStyle={dynStyle}
-                                            />
-                                            <div style={dynStyle.card} className="flex flex-col transition-all duration-500">
-                                                {isInputMode ? (
-                                                    <div className="bg-white p-5 md:p-6 rounded-[2rem] shadow-lg border border-gray-100 flex flex-col gap-3 h-full justify-center w-full animate-in slide-in-from-right-8 fade-in">
-                                                        <div className="flex justify-between items-center bg-gray-50 px-4 py-1.5 rounded-2xl border border-gray-100">
-                                                            <div className="flex items-center gap-2"><Icons.ThumbsUp size={18} className="text-green-500" /><span className="text-sm md:text-lg font-black text-green-600">{stats.correct}</span></div>
-                                                            <Badge color="orange">{timeLimitValue}s</Badge>
-                                                            <div className="flex items-center gap-2"><Icons.ThumbsDown size={18} className="text-red-400" /><span className="text-sm md:text-lg font-black text-red-400">{stats.incorrect}</span></div>
-                                                        </div>
-                                                        <div className="grid grid-cols-3 gap-2 flex-1 items-center">
-                                                            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
-                                                                <button key={n} onClick={() => setUserAnswer(p => p.length < 3 ? p + n : p)} style={{...dynStyle.keypadText, ...dynStyle.keypadBtnPadding}} className={`bg-white hover:bg-blue-50 text-blue-600 font-black rounded-xl border-b-4 border-gray-100 active:border-b-0 h-full transition-all`}>{n}</button>
-                                                            ))}
-                                                            <button onClick={() => setUserAnswer(p => p.slice(0, -1))} className="bg-red-50 text-red-400 rounded-xl border-b-4 border-red-100 flex items-center justify-center h-full active:border-b-0"><Icons.Delete size={24} /></button>
-                                                            <button onClick={() => setUserAnswer(p => p.length < 3 ? p + '0' : p)} style={dynStyle.keypadText} className={`bg-white text-blue-600 font-black rounded-xl border-b-4 border-gray-100 h-full active:border-b-0`}>0</button>
-                                                            <button onClick={handleSubmitStudy} className="bg-blue-600 text-white rounded-xl border-b-4 border-blue-800 flex items-center justify-center shadow-lg h-full active:border-b-0 hover:bg-blue-700"><Icons.Check size={28} /></button>
-                                                        </div>
-                                                        <button onClick={() => { setIsInputMode(false); setStats({correct:0, incorrect:0}); }} className="text-gray-300 font-bold py-1 text-[8px] md:text-[10px] uppercase text-center hover:text-red-500">Quay lại xem</button>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex flex-col justify-center h-full w-full gap-3 md:gap-6 animate-in fade-in">
-                                                        {/* Time limit block */}
-                                                        <div className="flex items-center justify-between bg-white px-4 py-3 md:py-4 rounded-3xl border border-gray-100 shadow-sm w-full">
-                                                            <div className="flex items-center gap-2"><Icons.Clock size={20} className="text-orange-400" /><span className="font-bold text-gray-500 text-[10px] md:text-sm uppercase tracking-wide">Thời gian</span></div>
-                                                            <div className="flex items-center gap-2">
-                                                                <input type="number" min="2" max="60" value={timeLimitValue} onChange={(e) => setTimeLimitValue(Math.max(2, parseInt(e.target.value) || 2))} disabled={!isTimeLimitEnabled} className="w-10 h-8 text-center font-black rounded-lg border bg-gray-50 outline-none text-sm md:text-base"/>
-                                                                <button onClick={() => setIsTimeLimitEnabled(!isTimeLimitEnabled)} className={`relative w-10 h-5 rounded-full transition-colors ${isTimeLimitEnabled ? 'bg-green-500' : 'bg-gray-200'}`}><div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${isTimeLimitEnabled ? 'translate-x-5' : 'translate-x-0'}`} /></button>
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Circle Buttons Row */}
-                                                        <div className="flex items-center justify-between px-2 md:px-6 bg-white py-3 rounded-[2rem] shadow-sm border border-gray-100 w-full">
-                                                            <CircleButton 
-                                                                icon={isRandomMode ? <Icons.Shuffle size={20}/> : <Icons.SortNumeric size={20}/>} 
-                                                                onClick={() => { setIsRandomMode(!isRandomMode); }} 
-                                                                active={false}
-                                                                color="purple"
-                                                                label={isRandomMode ? "Ngẫu nhiên" : "Tuần tự"}
-                                                            />
-                                                            <div className="w-px h-8 bg-gray-100"></div>
-                                                            <CircleButton icon={<Icons.Refresh size={20}/>} onClick={() => {setIsPlaying(false); nextStudyCalculation();}} color="blue" label="Đổi số"/>
-                                                            <div className="w-px h-8 bg-gray-100"></div>
-                                                            <CircleButton icon={<Icons.Play size={20} fill="currentColor"/>} onClick={() => setIsPlaying(true)} active={isPlaying} color="green" label="Tự chạy" />
-                                                            <CircleButton icon={<Icons.Stop size={20} fill="currentColor"/>} onClick={() => setIsPlaying(false)} disabled={!isPlaying} color="red" label="Dừng" />
-                                                        </div>
-
-                                                        {/* Check Button Block */}
-                                                        <button onClick={() => {setIsPlaying(false); setIsInputMode(true);}} className="bg-blue-600 text-white w-full py-4 rounded-2xl font-black shadow-lg text-base md:text-xl uppercase active:scale-95 transition-all border-b-4 border-blue-800 hover:bg-blue-700 flex items-center justify-center gap-2">
-                                                            <Icons.Check size={24} /> Kiểm tra ngay
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                            
-                            {/* BẢNG CÀI ĐẶT NỔI TOÀN CỤC */}
-                            <SettingsPanel 
-                                isOpen={isSettingsOpen} 
-                                onClose={() => setIsSettingsOpen(false)} 
-                                scale={scale} setScale={setScale}
-                                currentAppSizeId={appSizeId} setAppSizeId={setAppSizeId} 
-                                ratioMode={ratioMode} setRatioMode={setRatioMode}
-                            />
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useCallback, useRef, useMemo } = React;
+/**
+* BLOCK 1: TÀI NGUYÊN (RESOURCES)
+* Đã cập nhật icon Notebook thành hình Tam giác cảnh báo (Alert Triangle).
+*/
+const ICONS_SVG = {
+BookOpen: <><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></>,
+Brain: <><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></>,
+ArrowLeft: <><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></>,
+Refresh: <><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></>,
+Check: <polyline points="20 6 9 17 4 12"/>,
+X: <><path d="M18 6 6 18"/><path d="m6 6 12 12"/></>,
+Play: <polygon points="5 3 19 12 5 21 5 3"/>,
+Stop: <rect width="18" height="18" x="3" y="3" rx="2" />,
+Delete: <path d="M20 5H9l-7 7 7 7h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Z"/>,
+Settings: <><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></>,
+Clock: <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>,
+Sigma: <path d="M18 6H5a2 2 0 0 0 0 4h8v4H5a2 2 0 0 0 0 4h13" />,
+Star: <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />,
+ThumbsUp: <path d="M7 10v12M2 10h5l1.58-6.33a2 2 0 0 1 1.88-1.33h1.83a2 2 0 0 1 1.95 2.45l-1.12 4.88H19a2 2 0 0 1 2 2c0 .4-.14.77-.38 1.07l-2.6 3.47A2 2 0 0 1 16.42 19H7" />,
+ThumbsDown: <path d="M17 14V2M22 14h-5l-1.58 6.33a2 2 0 0 1-1.88 1.33h-1.83a2 2 0 0 1-1.95-2.45l1.12-4.88H5a2 2 0 0 1-2-2c0-.4.14-.77.38-1.07l2.6-3.47A2 2 0 0 1 7.58 5H17" />,
+Shuffle: <><polyline points="16 3 21 3 21 8"/><line x1="4" x2="21" y1="20" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" x2="21" y1="15" y2="21"/><line x1="4" x2="9" y1="4" y2="9"/></>,
+SortNumeric: <><path d="M4 6h9"/><path d="M4 12h9"/><path d="M4 18h9"/><path d="M19 5a2.5 2.5 0 0 1 0 5H17"/><path d="M17 14h2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-2v-6"/></>,
+Monitor: <><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></>,
+Layers: <><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></>,
+Crop: <><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></>,
+XCircle: <><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></>,
+Notebook: <><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><line x1="12" x2="12" y1="9" y2="13" /><line x1="12" x2="12.01" y1="17" y2="17" /></>,
+Trash: <><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></>,
+};
+/**
+* BLOCK 2: NGUYÊN TỬ (ATOMS)
+* Truy xuất đúng ICONS_SVG từ Block 1
+*/
+const Icon = ({ name, size = 24, className = "", fill = "none" }) => (
+<svg
+xmlns="http://www.w3.org/2000/svg"
+width={size} height={size}
+viewBox="0 0 24 24"
+fill={fill}
+stroke="currentColor"
+strokeWidth="2.5"
+strokeLinecap="round"
+strokeLinejoin="round"
+className={className}
+>
+{ICONS_SVG[name]}
+</svg>
+);
+const Badge = ({ children, color = "blue" }) => (
+<div className={`px-2 py-0.5 rounded-full border border-${color}-100 bg-${color}-50 text-${color}-600 text-[10px] md:text-xs font-bold shadow-sm inline-block`}>
+{children}
+</div>
+);
+const CircleButton = ({ iconName, onClick, active, color = "blue", disabled, label }) => (
+<div className="flex flex-col items-center gap-1">
+<button
+onClick={onClick} disabled={disabled}
+className={`p-2.5 md:p-3.5 rounded-full transition-all active:scale-90 shadow-sm
+${disabled ? 'bg-gray-50 text-gray-200' :
+active ? `bg-${color}-100 text-${color}-600 shadow-inner ring-2 ring-${color}-200` : `bg-${color}-500 text-white hover:bg-${color}-600 shadow-${color}-200`}
+`}
+>
+<Icon name={iconName} size={20} fill={active && (iconName === 'Play' || iconName === 'Stop') ? "currentColor" : "none"} />
+</button>
+{label && <span className="text-[8px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wide">{label}</span>}
+</div>
+);
+/**
+* TẦNG 3: KHỐI (BLOCKS)
+* Kết hợp nguyên tử thành cụm chức năng.
+*/
+const TableSelector = ({ current, onSelect }) => (
+<div className="flex justify-center items-center gap-1.5 overflow-x-auto no-scrollbar py-2 px-4 bg-white/50 border-b border-gray-100">
+{[2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+<button
+key={num} onClick={() => onSelect(num)}
+className={`flex-shrink-0 w-8 h-8 md:w-9 md:h-9 rounded-lg font-black text-xs transition-all border
+${current === num ? 'bg-blue-600 text-white border-blue-600 scale-105 shadow-md' : 'bg-white text-gray-400 border-gray-100 hover:bg-gray-50'}`}
+>
+{num}
+</button>
+))}
+<button
+onClick={() => onSelect('all')}
+className={`flex-shrink-0 w-8 h-8 md:w-9 md:h-9 rounded-lg font-black text-xs transition-all border flex items-center justify-center
+${current === 'all' ? 'bg-purple-600 text-white border-purple-600 scale-105 shadow-md' : 'bg-white text-purple-400 border-purple-100 hover:bg-purple-50'}`}
+>
+<Icon name="Sigma" size={16} />
+</button>
+</div>
+);
+const FlashCardBlock = ({ table, factor, isInputMode, userAnswer, checkStatus, isPlaying, style }) => (
+<div
+style={style.card}
+className={`bg-white rounded-[2rem] shadow-lg border border-gray-100 flex flex-col items-center justify-center sync-scale relative overflow-hidden ${isPlaying ? 'ring-4 ring-green-50 scale-[1.02]' : ''}`}
+>
+<div className="flex items-center justify-center flex-1 w-full">
+<span style={style.number} className="font-black text-gray-800 leading-none">{table}</span>
+<span style={style.operator} className="text-gray-200 font-light mx-2 md:mx-4">×</span>
+<span style={style.number} className="font-black text-blue-600 leading-none">{factor}</span>
+</div>
+<div className="w-full px-8 opacity-50"><div className="w-full h-0.5 bg-gray-50"></div></div>
+<div className="flex items-center justify-center flex-1 w-full relative">
+<span style={style.operator} className="text-gray-200 font-light absolute left-6 md:left-8">=</span>
+{isInputMode ? (
+<div style={{...style.number, ...style.inputWidth}} className={`font-black text-center border-b-2 md:border-b-4 border-dashed leading-none mx-2 md:mx-4 ${checkStatus === 'correct' ? 'text-green-500 border-green-500' : checkStatus === 'incorrect' ? 'text-red-500 border-red-500' : 'text-blue-600 border-blue-100'}`}>
+{userAnswer || '?'}
+</div>
+) : (
+<span style={style.number} className="font-black text-green-500 leading-none">{table * factor}</span>
+)}
+</div>
+{checkStatus && (
+<div style={style.feedbackText} className="absolute bottom-4 font-black animate-in fade-in slide-in-from-bottom-2 w-full text-center">
+<span className={`px-4 py-1 rounded-full ${checkStatus === 'correct' ? 'bg-green-100 text-green-600' : 'bg-red-50 text-red-500'}`}>
+{checkStatus === 'correct' ? 'CHÍNH XÁC!' : `ĐÁP ÁN LÀ ${table * factor}`}
+</span>
+</div>
+)}
+</div>
+);
+const KeypadBlock = ({ onNumber, onDelete, onSubmit, style }) => (
+<div className="grid grid-cols-3 gap-2 flex-1 items-center">
+{[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
+<button key={n} onClick={() => onNumber(n.toString())} style={{...style.keypadText, ...style.keypadBtnPadding}} className="bg-white hover:bg-blue-50 text-blue-600 font-black rounded-xl border-b-4 border-gray-100 active:border-b-0 h-full">{n}</button>
+))}
+<button onClick={onDelete} className="bg-red-50 text-red-400 rounded-xl border-b-4 border-red-100 flex items-center justify-center h-full active:border-b-0"><Icon name="Delete" size={24} /></button>
+<button onClick={() => onNumber('0')} style={style.keypadText} className="bg-white text-blue-600 font-black rounded-xl border-b-4 border-gray-100 h-full active:border-b-0">0</button>
+<button onClick={onSubmit} className="bg-blue-600 text-white rounded-xl border-b-4 border-blue-800 flex items-center justify-center shadow-lg h-full active:border-b-0 hover:bg-blue-700"><Icon name="Check" size={28} /></button>
+</div>
+);
+/**
+* BLOCK 4: MÀN HÌNH (VIEWS)
+* Cập nhật: Thêm màn hình Chờ/Chạy cho chế độ Kiểm tra và Bảng kết quả.
+*/
+const MenuScreenView = ({ onStartStudy, onStartCheck, onStartQuiz, onOpenSettings, onOpenNotebook, notebookCount }) => (
+<div className="flex flex-col items-center justify-center min-h-full space-y-8 p-6 relative">
+<div className="absolute top-4 right-4 flex gap-2">
+<button
+onClick={onOpenNotebook}
+className="relative px-3 py-2 bg-white shadow-sm rounded-xl text-yellow-600 hover:bg-yellow-50 border border-yellow-100 transition-all z-20 active:scale-90 flex items-center gap-1"
+>
+<Icon name="Notebook" size={22} />
+<span className="font-black text-sm">Sai</span>
+{notebookCount > 0 && (
+<span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full ring-2 ring-white animate-bounce">
+{notebookCount}
+</span>
+)}
+</button>
+<button onClick={onOpenSettings} className="p-2.5 bg-white shadow-sm rounded-full text-gray-400 hover:text-blue-600 border border-gray-100 z-20 active:scale-90">
+<Icon name="Settings" size={22} />
+</button>
+</div>
+<h1 className="text-4xl md:text-7xl font-black text-blue-600 mb-2 leading-tight">Bé Vui Học Toán</h1>
+<div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-4xl">
+<button onClick={onStartStudy} className="p-8 bg-white rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all border border-gray-100 flex flex-col items-center active:scale-95 group">
+<div className="bg-green-50 p-4 rounded-full mb-4 group-hover:bg-green-100 transition-colors"><Icon name="BookOpen" size={40} className="text-green-600" /></div>
+<span className="text-xl font-black text-gray-800">Học Bài</span>
+<span className="text-[10px] text-gray-400 mt-1 uppercase tracking-wide">Xem thẻ</span>
+</button>
+<button onClick={onStartCheck} className="p-8 bg-white rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all border border-gray-100 flex flex-col items-center active:scale-95 group">
+<div className="bg-blue-50 p-4 rounded-full mb-4 group-hover:bg-blue-100 transition-colors"><Icon name="Check" size={40} className="text-blue-600" /></div>
+<span className="text-xl font-black text-gray-800">Kiểm Tra</span>
+<span className="text-[10px] text-gray-400 mt-1 uppercase tracking-wide">Nhập số</span>
+</button>
+<button onClick={onStartQuiz} className="p-8 bg-white rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all border border-gray-100 flex flex-col items-center active:scale-95 group">
+<div className="bg-orange-50 p-4 rounded-full mb-4 group-hover:bg-orange-100 transition-colors"><Icon name="Brain" size={40} className="text-orange-600" /></div>
+<span className="text-xl font-black text-gray-800">Luyện Tập</span>
+<span className="text-[10px] text-gray-400 mt-1 uppercase tracking-wide">Trắc nghiệm</span>
+</button>
+</div>
+</div>
+);
+// --- COMPONENT MỚI: Bảng Kết Quả ---
+const ResultSummaryView = ({ isOpen, onClose, stats }) => {
+if (!isOpen) return null;
+return (
+<div className="absolute inset-0 z-[400] bg-black/50 backdrop-blur-sm flex items-center justify-center animate-in fade-in">
+<div className="bg-white p-8 rounded-[3rem] shadow-2xl w-full max-w-sm text-center m-4 animate-in zoom-in-95 duration-300 border-4 border-white">
+<div className="mb-6">
+<Icon name="Star" size={64} className="text-yellow-400 mx-auto animate-bounce" fill="currentColor" />
+<h2 className="text-2xl font-black text-blue-600 mt-2 uppercase">Kết Quả</h2>
+</div>
+<div className="grid grid-cols-2 gap-4 mb-8">
+<div className="bg-green-50 p-4 rounded-2xl border border-green-100">
+<div className="text-green-500 font-black text-3xl">{stats.correct}</div>
+<div className="text-xs text-green-400 font-bold uppercase">Đúng</div>
+</div>
+<div className="bg-red-50 p-4 rounded-2xl border border-red-100">
+<div className="text-red-500 font-black text-3xl">{stats.incorrect}</div>
+<div className="text-xs text-red-400 font-bold uppercase">Sai</div>
+</div>
+</div>
+<button onClick={onClose} className="bg-blue-600 text-white w-full py-4 rounded-2xl font-black shadow-lg uppercase text-lg hover:bg-blue-700 active:scale-95 transition-all">
+Xác nhận
+</button>
+</div>
+</div>
+);
+};
+const NotebookScreenView = ({ isOpen, onClose, mistakes, onClear, dynStyle }) => {
+if (!isOpen) return null;
+return (
+<div className="absolute inset-0 z-[300] bg-white flex flex-col animate-in slide-in-from-bottom duration-500">
+<div className="p-4 border-b border-gray-100 flex items-center justify-between bg-yellow-50/50">
+<div className="flex items-center gap-2 font-black text-yellow-600 text-sm uppercase">
+<Icon name="Notebook" size={18} /> Sổ tay ghi nhớ
+</div>
+<div className="flex gap-2">
+{mistakes.length > 0 && (
+<button onClick={onClear} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors active:scale-90">
+<Icon name="Trash" size={20} />
+</button>
+)}
+<button onClick={onClose} className="p-2 text-gray-400 hover:text-blue-600 transition-colors active:scale-90">
+<Icon name="XCircle" size={24} />
+</button>
+</div>
+</div>
+<div className="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar">
+{mistakes.length === 0 ? (
+<div className="h-full flex flex-col items-center justify-center text-gray-300 gap-4 opacity-50">
+<Icon name="Star" size={80} fill="currentColor" />
+<p className="font-black text-center px-8 uppercase text-sm tracking-widest">Bé chưa có lỗi sai nào.<br/>Thật là tuyệt vời!</p>
+</div>
+) : (
+<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+{mistakes.map((item, idx) => (
+<div key={idx} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between animate-in fade-in slide-in-from-left duration-300">
+<div className="flex items-center gap-4">
+<span className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-black text-xs">{idx + 1}</span>
+<div className="font-black text-xl text-gray-800">
+{item.table} <span className="text-orange-400">×</span> {item.factor} <span className="text-blue-600">= {item.table * item.factor}</span>
+</div>
+</div>
+<Badge color="orange">Cần ôn tập</Badge>
+</div>
+))}
+</div>
+)}
+</div>
+<div className="p-6 text-center text-[10px] font-bold text-gray-300 uppercase tracking-widest bg-gray-50/50">
+Lưu các phép tính bé làm sai để luyện tập lại
+</div>
+</div>
+);
+};
+const StudyScreenView = ({
+table, factor, isInputMode, isRandom, isPlaying, userAnswer, checkStatus, stats, timeLimitValue, isTimeLimitEnabled,
+onBack, onOpenSettings, onSelectTable, onToggleRandom, onRefresh, onTogglePlay, onStop, onEnterInputMode,
+onNumberInput, onDeleteInput, onSubmitInput, onToggleTimeLimit, onTimeLimitChange, style,
+onOpenNotebook, notebookCount,
+// --- CẬP NHẬT PROPS MỚI ---
+isCheckSessionActive, onSessionStart, onSessionEnd
+}) => (
+<div className="flex flex-col h-full overflow-hidden animate-in fade-in duration-500">
+<div className="pt-3 pb-2 px-4 bg-white/80 backdrop-blur-sm z-10 border-b border-gray-100 flex items-center justify-between shadow-sm">
+<button onClick={onBack} className="p-1.5 bg-gray-50 rounded-lg"><Icon name="ArrowLeft" size={20} /></button>
+<h2 className="text-[10px] md:text-sm font-black text-gray-500 uppercase">{table === 'all' ? "TỔNG HỢP" : `BẢNG NHÂN ${table}`}</h2>
+<div className="flex gap-2">
+<button
+onClick={onOpenNotebook}
+className="relative px-2 py-1.5 bg-white border border-yellow-100 shadow-sm rounded-lg text-yellow-600 hover:bg-yellow-50 active:scale-90 flex items-center gap-1"
+>
+<Icon name="Notebook" size={18} />
+<span className="font-bold text-[10px]">Sai</span>
+{notebookCount > 0 && (
+<span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[8px] font-black w-4 h-4 flex items-center justify-center rounded-full ring-2 ring-white animate-bounce">
+{notebookCount}
+</span>
+)}
+</button>
+<button onClick={onOpenSettings} className="p-1.5 bg-white border border-gray-100 shadow-sm rounded-lg text-blue-500 active:scale-90">
+<Icon name="Settings" size={20} />
+</button>
+</div>
+</div>
+<TableSelector current={table} onSelect={onSelectTable} />
+<div className="flex-1 overflow-y-auto p-4 md:p-6 no-scrollbar bg-[#F8FAFC] flex flex-col items-center justify-center relative">
+<div style={{ gap: style.containerGap }} className="flex flex-col md:flex-row items-center md:items-stretch justify-center w-full transition-all duration-500">
+<FlashCardBlock table={table === 'all' ? Math.floor(Math.random()*8)+2 : table} factor={factor} isInputMode={isInputMode} userAnswer={userAnswer} checkStatus={checkStatus} isPlaying={isPlaying} style={style} />
+<div style={style.card} className="flex flex-col transition-all duration-500">
+{isInputMode ? (
+<div className="bg-white p-5 md:p-6 rounded-[2rem] shadow-lg border border-gray-100 flex flex-col gap-3 h-full justify-center w-full relative overflow-hidden">
+{!isCheckSessionActive ? (
+/* --- TRẠNG THÁI CHỜ (SETUP) --- */
+<div className="flex flex-col items-center justify-center h-full gap-6 animate-in fade-in">
+<div className="text-center">
+<h3 className="text-xl font-black text-gray-800 uppercase mb-2">Sẵn sàng chưa?</h3>
+<p className="text-sm text-gray-400">Cài đặt thời gian và bấm bắt đầu</p>
+</div>
+{/* Cài đặt thời gian */}
+<div className="flex items-center justify-between bg-gray-50 px-6 py-3 rounded-2xl border border-gray-200 w-full">
+<div className="flex items-center gap-2">
+<Icon name="Clock" size={20} className={isTimeLimitEnabled ? "text-orange-400" : "text-gray-300"} />
+<span className="font-bold text-gray-500 text-xs uppercase">Giới hạn/câu</span>
+</div>
+<div className="flex items-center gap-3">
+<input type="number" min="2" max="60" value={timeLimitValue} onChange={(e) => onTimeLimitChange(parseInt(e.target.value) || 2)} className="w-10 h-8 text-center font-black rounded-lg border bg-white outline-none text-blue-600" disabled={!isTimeLimitEnabled}/>
+<button onClick={onToggleTimeLimit} className={`relative w-10 h-5 rounded-full transition-colors ${isTimeLimitEnabled ? 'bg-green-500' : 'bg-gray-300'}`}><div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${isTimeLimitEnabled ? 'translate-x-5' : 'translate-x-0'}`} /></button>
+</div>
+</div>
+<button onClick={onSessionStart} className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg text-xl uppercase tracking-widest border-b-4 border-blue-800 hover:bg-blue-700 active:scale-95 transition-all flex items-center justify-center gap-2">
+<Icon name="Play" size={24} fill="currentColor"/> Bắt đầu
+</button>
+</div>
+) : (
+/* --- TRẠNG THÁI CHẠY (ACTIVE) --- */
+<div className="flex flex-col h-full gap-3 animate-in slide-in-from-right">
+<div className="flex justify-between items-center bg-gray-50 px-4 py-1.5 rounded-2xl">
+<div className="flex items-center gap-2"><Icon name="ThumbsUp" size={18} className="text-green-500" /><span className="text-lg font-black text-green-600">{stats.correct}</span></div>
+<div className="text-xs font-bold text-gray-400 uppercase tracking-widest">Đang kiểm tra</div>
+<div className="flex items-center gap-2"><Icon name="ThumbsDown" size={18} className="text-red-400" /><span className="text-lg font-black text-red-400">{stats.incorrect}</span></div>
+</div>
+<KeypadBlock onNumber={onNumberInput} onDelete={onDeleteInput} onSubmit={onSubmitInput} style={style} />
+<button onClick={onSessionEnd} className="w-full py-3 bg-red-50 text-red-500 rounded-xl font-black border border-red-100 hover:bg-red-100 transition-all uppercase text-xs flex items-center justify-center gap-2">
+<Icon name="Stop" size={16} fill="currentColor"/> Kết thúc bài kiểm tra
+</button>
+</div>
+)}
+</div>
+) : (
+<div className="flex flex-col justify-center h-full w-full gap-3 md:gap-6 animate-in fade-in">
+<div className="flex items-center justify-between px-2 md:px-6 bg-white py-3 rounded-[2rem] shadow-sm border border-gray-100 w-full">
+<CircleButton iconName={isRandom ? "Shuffle" : "SortNumeric"} onClick={onToggleRandom} color="purple" label={isRandom ? "Ngẫu nhiên" : "Tuần tự"} />
+<div className="w-px h-8 bg-gray-100"></div>
+<CircleButton iconName="Refresh" onClick={onRefresh} color="blue" label="Đổi số"/>
+<div className="w-px h-8 bg-gray-100"></div>
+<CircleButton iconName="Play" onClick={onTogglePlay} active={isPlaying} color="green" label="Tự chạy" />
+<CircleButton iconName="Stop" onClick={onStop} disabled={!isPlaying} color="red" label="Dừng" />
+</div>
+</div>
+)}
+</div>
+</div>
+</div>
+</div>
+);
+const QuizScreenView = ({ score, count, TOTAL, question, feedback, onAnswer, goHome, openSettings, dynStyle }) => {
+if (!question) return null;
+return (
+<div className="flex flex-col h-full overflow-hidden">
+<div className="pt-3 pb-2 px-4 bg-white/80 backdrop-blur-sm z-10 border-b border-gray-100 flex items-center justify-between shadow-sm"><button onClick={goHome} className="p-1.5 bg-gray-50 rounded-lg"><Icon name="ArrowLeft" size={20} /></button><h2 className="text-xs font-black text-gray-500 uppercase">CÂU {count + 1}/{TOTAL}</h2><div className="flex items-center gap-2"><div className="flex items-center gap-1"><Icon name="ThumbsUp" size={16} className="text-green-500" /><span className="font-black text-green-600 text-sm">{score}</span></div><button onClick={openSettings} className="p-1.5 border rounded-lg bg-white text-blue-500"><Icon name="Settings" size={20} /></button></div></div>
+<div className="flex-1 p-4 bg-[#F8FAFC] flex flex-col items-center justify-center">
+<div className="bg-white p-6 rounded-[2rem] shadow-lg w-full max-w-md text-center relative overflow-hidden border border-gray-100">
+{feedback === 'correct' && <div className="absolute inset-0 bg-green-500/90 flex items-center justify-center z-20"><Icon name="Check" size={80} className="text-white animate-bounce" /></div>}
+{feedback === 'incorrect' && <div className="absolute inset-0 bg-red-500/90 flex flex-col items-center justify-center p-4 z-20"><Icon name="X" size={80} className="text-white" /><p className="text-white font-black mt-2">ĐÁP ÁN: {question.correctAnswer}</p></div>}
+<div style={{ fontSize: `calc(${dynStyle.number.fontSize} * 1.5)` }} className="font-black text-gray-800">{question.num1} <span className="text-orange-500">×</span> {question.num2}</div>
+</div>
+<div className="grid grid-cols-2 gap-2 w-full max-w-md mt-4">{question.answers.map((ans, idx) => (<button key={idx} onClick={() => onAnswer(ans)} disabled={feedback !== null} style={{ fontSize: `calc(${dynStyle.number.fontSize} * 0.5)` }} className={`py-4 rounded-xl font-black border-b-4 ${feedback ? 'bg-gray-50 text-gray-200' : 'bg-white text-blue-600 border-blue-50'}`}>{ans}</button>))}</div>
+</div>
+</div>
+);
+};
+const SettingsPanelView = ({ isOpen, onClose, scale, setScale, appSize, setAppSize, ratio, setRatio }) => {
+if (!isOpen) return null;
+return (
+<div className="absolute top-16 right-4 z-[200] w-72 bg-white rounded-3xl shadow-2xl border-2 border-blue-50 p-5 space-y-4 animate-in fade-in">
+<div className="flex justify-between items-center"><h3 className="font-black text-blue-600 text-sm">CÀI ĐẶT</h3><button onClick={onClose}><Icon name="X" size={20}/></button></div>
+<div><label className="text-[10px] font-bold text-gray-400 block mb-2">THU PHÓNG: {scale}%</label><input type="range" min="50" max="150" step="5" value={scale} onChange={(e)=>setScale(parseInt(e.target.value))} className="w-full" /></div>
+<div><label className="text-[10px] font-bold text-gray-400 block mb-2">TỈ LỆ:</label><div className="grid grid-cols-2 gap-2">{['3:4', '1:1', '4:3', '16:9'].map(r => <button key={r} onClick={()=>setRatio(r)} className={`p-2 border rounded-xl text-[10px] font-black ${ratio===r?'bg-blue-600 text-white':'bg-white'}`}>{r}</button>)}</div></div>
+<div><label className="text-[10px] font-bold text-gray-400 block mb-2">KHUNG APP:</label><div className="grid grid-cols-4 gap-1">{['xs', 'sm', 'md', 'full'].map(s => <button key={s} onClick={()=>setAppSize(s)} className={`p-1 border rounded text-[10px] font-black ${appSize===s?'bg-blue-500 text-white':'bg-white'}`}>{s.toUpperCase()}</button>)}</div></div>
+</div>
+);
+};
+/**
+* BLOCK 5: LOGIC (CUSTOM HOOKS)
+* Cập nhật: Loại bỏ window.confirm để tuân thủ quy tắc an toàn hệ thống của Canvas.
+* Bảo toàn: Giữ nguyên 100% logic của useScaling và useMathLogic.
+*/
+const useScaling = () => {
+const [scale, setScale] = useState(100);
+const [appSizeId, setAppSizeId] = useState('md');
+const [ratioMode, setRatioMode] = useState('3:4');
+const appFrameClass = useMemo(() => {
+switch(appSizeId) {
+case 'xs': return 'max-w-xl h-[100dvh] md:h-[65vh] md:max-h-[600px] md:my-4';
+case 'sm': return 'max-w-2xl h-[100dvh] md:h-[75vh] md:max-h-[700px] md:my-4';
+case 'full': return 'max-w-full h-[100dvh] m-0 rounded-none border-none';
+default: return 'max-w-4xl h-[100dvh] md:h-[90vh] md:max-h-[850px] md:my-4';
+}
+}, [appSizeId]);
+const dynStyle = useMemo(() => {
+const s = scale / 100;
+let bW = 320, bH = 426;
+if (ratioMode === '1:1') { bW = 380; bH = 380; }
+else if (ratioMode === '4:3') { bW = 420; bH = 315; }
+else if (ratioMode === '16:9') { bW = 480; bH = 270; }
+const finalW = bW * s, finalH = bH * s, minDim = Math.min(finalW, finalH);
+return { card: { width: `${finalW}px`, height: `${finalH}px` }, number: { fontSize: `${Math.min(80, minDim * 0.25)}px` }, operator: { fontSize: `${Math.min(40, minDim * 0.15)}px` }, inputWidth: { minWidth: `${finalW * 0.4}px` }, feedbackText: { fontSize: `${Math.max(10, minDim * 0.04)}px` }, keypadText: { fontSize: `${30 * s}px` }, keypadBtnPadding: { padding: `${12 * s}px 0` }, containerGap: `${24 * s}px` };
+}, [scale, ratioMode]);
+return { scale, setScale, appSizeId, setAppSizeId, ratioMode, setRatioMode, appFrameClass, dynStyle };
+};
+const useMathLogic = (selectedTable, isRandomMode) => {
+const [studyFactor, setStudyFactor] = useState(1);
+const [currentDisplayTable, setCurrentDisplayTable] = useState(2);
+const shuffledQueueRef = useRef([]);
+const nextStudyStep = useCallback(() => {
+if (selectedTable === 'all') setCurrentDisplayTable(Math.floor(Math.random() * 8) + 2);
+else setCurrentDisplayTable(selectedTable);
+setStudyFactor(prev => {
+if (isRandomMode) {
+if (shuffledQueueRef.current.length === 0) shuffledQueueRef.current = [1,2,3,4,5,6,7,8,9,10].sort(()=>Math.random()-0.5);
+return shuffledQueueRef.current.pop();
+}
+return prev >= 10 ? 1 : prev + 1;
+});
+}, [selectedTable, isRandomMode]);
+return { studyFactor, setStudyFactor, currentDisplayTable, nextStudyStep };
+};
+const useNotebook = () => {
+const [mistakes, setMistakes] = useState([]);
+const addMistake = useCallback((table, factor) => {
+setMistakes(prev => {
+// Kiểm tra xem phép tính này đã có trong sổ tay chưa để tránh trùng lặp
+const exists = prev.find(m => m.table === table && m.factor === factor);
+if (exists) return prev;
+return [...prev, { table, factor, timestamp: Date.now() }];
+});
+}, []);
+const clearNotebook = () => {
+// THAY ĐỔI: Loại bỏ window.confirm để đảm bảo ứng dụng không bị treo trong iframe
+setMistakes([]);
+};
+return { mistakes, addMistake, clearNotebook };
+};
+/**
+* BLOCK 6: ĐIỀU KHIỂN (CONTROLLER / APP)
+* Cập nhật: Đặt mặc định không giới hạn thời gian (isTimeLimitEnabled = false).
+*/
+const App = () => {
+const [screen, setScreen] = useState('menu');
+const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+const [isNotebookOpen, setIsNotebookOpen] = useState(false);
+// --- VỊ TRÍ THÊM MỚI 1: State cho phiên kiểm tra ---
+const [isCheckSessionActive, setIsCheckSessionActive] = useState(false);
+const [isResultOpen, setIsResultOpen] = useState(false);
+const scaleSudo = useScaling();
+const [selectedTable, setSelectedTable] = useState(2);
+const [isRandomMode, setIsRandomMode] = useState(true);
+const [isPlaying, setIsPlaying] = useState(false);
+const [isInputMode, setIsInputMode] = useState(false);
+const [userAnswer, setUserAnswer] = useState('');
+const [checkStatus, setCheckStatus] = useState(null);
+const [stats, setStats] = useState({ correct: 0, incorrect: 0 });
+// --- CẬP NHẬT: Mặc định tắt giới hạn thời gian ---
+const [isTimeLimitEnabled, setIsTimeLimitEnabled] = useState(false);
+const [timeLimitValue, setTimeLimitValue] = useState(7);
+const [quizScore, setQuizScore] = useState(0);
+const [quizCount, setQuizCount] = useState(0);
+const [quizQuestion, setQuizQuestion] = useState(null);
+const [quizFeedback, setQuizFeedback] = useState(null);
+// Khởi tạo logic toán học từ custom hook (Block 5)
+const math = useMathLogic(selectedTable, isRandomMode);
+// Khởi tạo logic sổ tay (Block 5)
+const notebook = useNotebook();
+const generateQuizQuestion = useCallback(() => {
+const n1 = Math.floor(Math.random() * 8) + 2;
+const n2 = Math.floor(Math.random() * 10) + 1;
+const correct = n1 * n2;
+let ans = [correct];
+while(ans.length < 4) {
+let w = Math.random() > 0.5 ? correct + Math.floor(Math.random()*5)+1 : Math.max(1, correct - Math.floor(Math.random()*5)-1);
+if(!ans.includes(w) && w > 0) ans.push(w);
+}
+setQuizQuestion({ num1: n1, num2: n2, correctAnswer: correct, answers: ans.sort(() => Math.random() - 0.5) });
+}, []);
+const handleQuizAnswer = (val) => {
+if(quizFeedback) return;
+if(val === quizQuestion.correctAnswer) {
+setQuizScore(s => s + 1);
+setQuizFeedback('correct');
+} else {
+setQuizFeedback('incorrect');
+notebook.addMistake(quizQuestion.num1, quizQuestion.num2);
+}
+setTimeout(() => {
+if(quizCount + 1 >= 10) setScreen('menu');
+else { setQuizCount(c => c + 1); setQuizFeedback(null); generateQuizQuestion(); }
+}, 1500);
+};
+// --- VỊ TRÍ THÊM MỚI 2: Handlers cho phiên kiểm tra ---
+const handleSessionStart = () => {
+setStats({ correct: 0, incorrect: 0 }); // Reset điểm
+setIsCheckSessionActive(true); // Bắt đầu game
+math.nextStudyStep();
+};
+const handleSessionEnd = () => {
+setIsCheckSessionActive(false); // Dừng game
+setIsResultOpen(true); // Mở bảng kết quả
+};
+// Logic Timer (Cập nhật điều kiện isCheckSessionActive)
+useEffect(() => {
+let itv;
+if (isPlaying) {
+itv = setInterval(math.nextStudyStep, 3000);
+} else if (isInputMode && isCheckSessionActive && isTimeLimitEnabled && !userAnswer && !checkStatus) {
+// Chỉ chạy timer khi đang trong phiên kiểm tra (isCheckSessionActive = true)
+itv = setInterval(() => {
+setStats(p => ({...p, incorrect: p.incorrect + 1}));
+setCheckStatus('incorrect');
+notebook.addMistake(math.currentDisplayTable, math.studyFactor);
+setTimeout(math.nextStudyStep, 1500);
+}, timeLimitValue * 1000);
+}
+return () => clearInterval(itv);
+}, [isPlaying, isInputMode, isCheckSessionActive, isTimeLimitEnabled, timeLimitValue, userAnswer, checkStatus, math.nextStudyStep, math.currentDisplayTable, math.studyFactor]);
+useEffect(() => { setUserAnswer(''); setCheckStatus(null); }, [math.studyFactor]);
+return (
+<div className="min-h-screen bg-[#F0F4F8] flex items-center justify-center p-0 md:p-4">
+<div className={`w-full ${scaleSudo.appFrameClass} bg-white md:rounded-[3rem] shadow-2xl relative overflow-hidden border-2 md:border-[12px] border-white flex flex-col`}>
+<div className="relative z-10 flex-1 overflow-hidden flex flex-col">
+{screen === 'menu' && (
+<MenuScreenView
+onStartStudy={() => {
+setIsInputMode(false);
+setScreen('study');
+math.nextStudyStep();
+}}
+onStartCheck={() => {
+setIsInputMode(true);
+setIsCheckSessionActive(false); // Đặt về false để hiện màn hình chờ "Sẵn sàng chưa?"
+setScreen('study');
+math.nextStudyStep();
+}}
+onStartQuiz={() => { setQuizScore(0); setQuizCount(0); generateQuizQuestion(); setScreen('quiz'); }}
+onOpenSettings={() => setIsSettingsOpen(true)}
+onOpenNotebook={() => setIsNotebookOpen(true)}
+notebookCount={notebook.mistakes.length}
+/>
+)}
+{screen === 'study' && (
+<StudyScreenView
+table={selectedTable} factor={math.studyFactor} isInputMode={isInputMode} isRandom={isRandomMode} isPlaying={isPlaying}
+userAnswer={userAnswer} checkStatus={checkStatus} stats={stats} timeLimitValue={timeLimitValue} isTimeLimitEnabled={isTimeLimitEnabled}
+style={scaleSudo.dynStyle} onBack={() => {setScreen('menu'); setIsPlaying(false); setIsCheckSessionActive(false);}} onOpenSettings={() => setIsSettingsOpen(true)} onSelectTable={(t) => {setSelectedTable(t); math.nextStudyStep();}}
+onToggleRandom={() => setIsRandomMode(!isRandomMode)} onRefresh={() => {setIsPlaying(false); math.nextStudyStep();}} onTogglePlay={() => setIsPlaying(!isPlaying)} onStop={() => setIsPlaying(false)}
+onEnterInputMode={(v) => {setIsInputMode(v); setIsPlaying(false); setStats({correct:0, incorrect:0});}}
+onNumberInput={(n) => setUserAnswer(p => p.length < 3 ? p + n : p)} onDeleteInput={() => setUserAnswer(p => p.slice(0, -1))}
+onSubmitInput={() => {
+if(!userAnswer || checkStatus) return;
+if(parseInt(userAnswer) === math.currentDisplayTable * math.studyFactor) {
+setCheckStatus('correct');
+setStats(p => ({...p, correct: p.correct+1}));
+} else {
+setCheckStatus('incorrect');
+setStats(p => ({...p, incorrect: p.incorrect+1}));
+notebook.addMistake(math.currentDisplayTable, math.studyFactor);
+}
+setTimeout(math.nextStudyStep, 1500);
+}}
+onToggleTimeLimit={() => setIsTimeLimitEnabled(!isTimeLimitEnabled)} onTimeLimitChange={setTimeLimitValue}
+onOpenNotebook={() => setIsNotebookOpen(true)}
+notebookCount={notebook.mistakes.length}
+// --- VỊ TRÍ CẬP NHẬT: Truyền props cho phiên kiểm tra ---
+isCheckSessionActive={isCheckSessionActive}
+onSessionStart={handleSessionStart}
+onSessionEnd={handleSessionEnd}
+/>
+)}
+{screen === 'quiz' && (
+<QuizScreenView
+score={quizScore} count={quizCount} TOTAL={10} question={quizQuestion} feedback={quizFeedback}
+onAnswer={handleQuizAnswer} goHome={() => setScreen('menu')} openSettings={() => setIsSettingsOpen(true)}
+dynStyle={scaleSudo.dynStyle}
+/>
+)}
+<NotebookScreenView isOpen={isNotebookOpen} onClose={() => setIsNotebookOpen(false)} mistakes={notebook.mistakes} onClear={notebook.clearNotebook} dynStyle={scaleSudo.dynStyle} />
+{/* --- VỊ TRÍ THÊM MỚI 3: Bảng kết quả --- */}
+<ResultSummaryView
+isOpen={isResultOpen}
+onClose={() => setIsResultOpen(false)}
+stats={stats}
+/>
+<SettingsPanelView isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} scale={scaleSudo.scale} setScale={scaleSudo.setScale} appSize={scaleSudo.appSizeId} setAppSize={scaleSudo.setAppSizeId} ratio={scaleSudo.ratioMode} setRatio={scaleSudo.setRatioMode} />
+</div>
+</div>
+</div>
+);
+};
+/**
+* PHẦN KẾT THÚC (END)
+*/
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
 </body>
 </html>
