@@ -51,6 +51,7 @@ XCircle: <><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 
 Notebook: <><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><line x1="12" x2="12" y1="9" y2="13" /><line x1="12" x2="12.01" y1="17" y2="17" /></>,
 Trash: <><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></>,
 };
+
 /**
 * BLOCK 2: NGUYÊN TỬ (ATOMS)
 * Truy xuất đúng ICONS_SVG từ Block 1
@@ -70,11 +71,13 @@ className={className}
 {ICONS_SVG[name]}
 </svg>
 );
+
 const Badge = ({ children, color = "blue" }) => (
 <div className={`px-2 py-0.5 rounded-full border border-${color}-100 bg-${color}-50 text-${color}-600 text-[10px] md:text-xs font-bold shadow-sm inline-block`}>
 {children}
 </div>
 );
+
 const CircleButton = ({ iconName, onClick, active, color = "blue", disabled, label }) => (
 <div className="flex flex-col items-center gap-1">
 <button
@@ -93,6 +96,7 @@ active ? `bg-${color}-100 text-${color}-600 shadow-inner ring-2 ring-${color}-20
 * TẦNG 3: KHỐI (BLOCKS)
 * Kết hợp nguyên tử thành cụm chức năng.
 */
+
 const TableSelector = ({ current, onSelect }) => (
 <div className="flex justify-center items-center gap-1.5 overflow-x-auto no-scrollbar py-2 px-4 bg-white/50 border-b border-gray-100">
 {[2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
@@ -113,6 +117,7 @@ ${current === 'all' ? 'bg-purple-600 text-white border-purple-600 scale-105 shad
 </button>
 </div>
 );
+
 const FlashCardBlock = ({ table, factor, isInputMode, userAnswer, checkStatus, isPlaying, style }) => (
 <div
 style={style.card}
@@ -143,6 +148,7 @@ className={`bg-white rounded-[2rem] shadow-lg border border-gray-100 flex flex-c
 )}
 </div>
 );
+
 const KeypadBlock = ({ onNumber, onDelete, onSubmit, style }) => (
 <div className="grid grid-cols-3 gap-2 flex-1 items-center">
 {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
@@ -155,10 +161,12 @@ const KeypadBlock = ({ onNumber, onDelete, onSubmit, style }) => (
 );
 /**
 * BLOCK 4: MÀN HÌNH (VIEWS)
-* Cập nhật: Thêm màn hình Chờ/Chạy cho chế độ Kiểm tra và Bảng kết quả.
+* Cập nhật: Thêm nút "Kết thúc" vào QuizScreenView.
 */
+
 const MenuScreenView = ({ onStartStudy, onStartCheck, onStartQuiz, onOpenSettings, onOpenNotebook, notebookCount }) => (
 <div className="flex flex-col items-center justify-center min-h-full space-y-8 p-6 relative">
+{/* Nút truy cập nhanh Sổ tay & Cài đặt */}
 <div className="absolute top-4 right-4 flex gap-2">
 <button
 onClick={onOpenNotebook}
@@ -176,18 +184,22 @@ className="relative px-3 py-2 bg-white shadow-sm rounded-xl text-yellow-600 hove
 <Icon name="Settings" size={22} />
 </button>
 </div>
+
 <h1 className="text-4xl md:text-7xl font-black text-blue-600 mb-2 leading-tight">Bé Vui Học Toán</h1>
+
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-4xl">
 <button onClick={onStartStudy} className="p-8 bg-white rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all border border-gray-100 flex flex-col items-center active:scale-95 group">
 <div className="bg-green-50 p-4 rounded-full mb-4 group-hover:bg-green-100 transition-colors"><Icon name="BookOpen" size={40} className="text-green-600" /></div>
 <span className="text-xl font-black text-gray-800">Học Bài</span>
 <span className="text-[10px] text-gray-400 mt-1 uppercase tracking-wide">Xem thẻ</span>
 </button>
+
 <button onClick={onStartCheck} className="p-8 bg-white rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all border border-gray-100 flex flex-col items-center active:scale-95 group">
 <div className="bg-blue-50 p-4 rounded-full mb-4 group-hover:bg-blue-100 transition-colors"><Icon name="Check" size={40} className="text-blue-600" /></div>
 <span className="text-xl font-black text-gray-800">Kiểm Tra</span>
 <span className="text-[10px] text-gray-400 mt-1 uppercase tracking-wide">Nhập số</span>
 </button>
+
 <button onClick={onStartQuiz} className="p-8 bg-white rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all border border-gray-100 flex flex-col items-center active:scale-95 group">
 <div className="bg-orange-50 p-4 rounded-full mb-4 group-hover:bg-orange-100 transition-colors"><Icon name="Brain" size={40} className="text-orange-600" /></div>
 <span className="text-xl font-black text-gray-800">Luyện Tập</span>
@@ -196,7 +208,7 @@ className="relative px-3 py-2 bg-white shadow-sm rounded-xl text-yellow-600 hove
 </div>
 </div>
 );
-// --- COMPONENT MỚI: Bảng Kết Quả ---
+
 const ResultSummaryView = ({ isOpen, onClose, stats }) => {
 if (!isOpen) return null;
 return (
@@ -206,6 +218,7 @@ return (
 <Icon name="Star" size={64} className="text-yellow-400 mx-auto animate-bounce" fill="currentColor" />
 <h2 className="text-2xl font-black text-blue-600 mt-2 uppercase">Kết Quả</h2>
 </div>
+
 <div className="grid grid-cols-2 gap-4 mb-8">
 <div className="bg-green-50 p-4 rounded-2xl border border-green-100">
 <div className="text-green-500 font-black text-3xl">{stats.correct}</div>
@@ -216,6 +229,7 @@ return (
 <div className="text-xs text-red-400 font-bold uppercase">Sai</div>
 </div>
 </div>
+
 <button onClick={onClose} className="bg-blue-600 text-white w-full py-4 rounded-2xl font-black shadow-lg uppercase text-lg hover:bg-blue-700 active:scale-95 transition-all">
 Xác nhận
 </button>
@@ -223,7 +237,8 @@ Xác nhận
 </div>
 );
 };
-const NotebookScreenView = ({ isOpen, onClose, mistakes, onClear, dynStyle }) => {
+
+const NotebookScreenView = ({ isOpen, onClose, mistakes, onClear, dynStyle, onReviewStudy, onReviewCheck, onReviewQuiz }) => {
 if (!isOpen) return null;
 return (
 <div className="absolute inset-0 z-[300] bg-white flex flex-col animate-in slide-in-from-bottom duration-500">
@@ -242,6 +257,7 @@ return (
 </button>
 </div>
 </div>
+
 <div className="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar">
 {mistakes.length === 0 ? (
 <div className="h-full flex flex-col items-center justify-center text-gray-300 gap-4 opacity-50">
@@ -264,24 +280,49 @@ return (
 </div>
 )}
 </div>
+
+{mistakes.length > 0 ? (
+<div className="p-3 bg-white border-t border-gray-100 grid grid-cols-3 gap-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-10">
+<button onClick={onReviewStudy} className="flex flex-col items-center justify-center p-2 rounded-xl bg-green-50 text-green-600 border border-green-100 hover:bg-green-100 active:scale-95 transition-all">
+<Icon name="BookOpen" size={20} />
+<span className="text-[10px] font-black uppercase mt-1">Học lại</span>
+</button>
+<button onClick={onReviewCheck} className="flex flex-col items-center justify-center p-2 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 hover:bg-blue-100 active:scale-95 transition-all">
+<Icon name="Check" size={20} />
+<span className="text-[10px] font-black uppercase mt-1">Kiểm tra lại</span>
+</button>
+<button onClick={onReviewQuiz} className="flex flex-col items-center justify-center p-2 rounded-xl bg-orange-50 text-orange-600 border border-orange-100 hover:bg-orange-100 active:scale-95 transition-all">
+<Icon name="Brain" size={20} />
+<span className="text-[10px] font-black uppercase mt-1">Trắc nghiệm</span>
+</button>
+</div>
+) : (
 <div className="p-6 text-center text-[10px] font-bold text-gray-300 uppercase tracking-widest bg-gray-50/50">
 Lưu các phép tính bé làm sai để luyện tập lại
 </div>
+)}
 </div>
 );
 };
+
 const StudyScreenView = ({
 table, factor, isInputMode, isRandom, isPlaying, userAnswer, checkStatus, stats, timeLimitValue, isTimeLimitEnabled,
 onBack, onOpenSettings, onSelectTable, onToggleRandom, onRefresh, onTogglePlay, onStop, onEnterInputMode,
 onNumberInput, onDeleteInput, onSubmitInput, onToggleTimeLimit, onTimeLimitChange, style,
 onOpenNotebook, notebookCount,
-// --- CẬP NHẬT PROPS MỚI ---
-isCheckSessionActive, onSessionStart, onSessionEnd
+isCheckSessionActive, onSessionStart, onSessionEnd,
+isReviewMode
 }) => (
 <div className="flex flex-col h-full overflow-hidden animate-in fade-in duration-500">
 <div className="pt-3 pb-2 px-4 bg-white/80 backdrop-blur-sm z-10 border-b border-gray-100 flex items-center justify-between shadow-sm">
-<button onClick={onBack} className="p-1.5 bg-gray-50 rounded-lg"><Icon name="ArrowLeft" size={20} /></button>
-<h2 className="text-[10px] md:text-sm font-black text-gray-500 uppercase">{table === 'all' ? "TỔNG HỢP" : `BẢNG NHÂN ${table}`}</h2>
+<button onClick={onBack} className={`flex items-center gap-1 rounded-lg transition-all ${isReviewMode ? 'pr-3 pl-2 bg-red-50 text-red-500' : 'p-1.5 bg-gray-50 text-gray-600'}`}>
+<Icon name="ArrowLeft" size={20} />
+{isReviewMode && <span className="text-[10px] font-black uppercase">Thoát</span>}
+</button>
+<h2 className="text-[10px] md:text-sm font-black text-gray-500 uppercase">
+{isReviewMode ? "ÔN TẬP SỔ TAY" : (table === 'all' ? "TỔNG HỢP" : `BẢNG NHÂN ${table}`)}
+</h2>
+
 <div className="flex gap-2">
 <button
 onClick={onOpenNotebook}
@@ -300,7 +341,9 @@ className="relative px-2 py-1.5 bg-white border border-yellow-100 shadow-sm roun
 </button>
 </div>
 </div>
-<TableSelector current={table} onSelect={onSelectTable} />
+
+{!isReviewMode && <TableSelector current={table} onSelect={onSelectTable} />}
+
 <div className="flex-1 overflow-y-auto p-4 md:p-6 no-scrollbar bg-[#F8FAFC] flex flex-col items-center justify-center relative">
 <div style={{ gap: style.containerGap }} className="flex flex-col md:flex-row items-center md:items-stretch justify-center w-full transition-all duration-500">
 <FlashCardBlock table={table === 'all' ? Math.floor(Math.random()*8)+2 : table} factor={factor} isInputMode={isInputMode} userAnswer={userAnswer} checkStatus={checkStatus} isPlaying={isPlaying} style={style} />
@@ -308,13 +351,11 @@ className="relative px-2 py-1.5 bg-white border border-yellow-100 shadow-sm roun
 {isInputMode ? (
 <div className="bg-white p-5 md:p-6 rounded-[2rem] shadow-lg border border-gray-100 flex flex-col gap-3 h-full justify-center w-full relative overflow-hidden">
 {!isCheckSessionActive ? (
-/* --- TRẠNG THÁI CHỜ (SETUP) --- */
 <div className="flex flex-col items-center justify-center h-full gap-6 animate-in fade-in">
 <div className="text-center">
 <h3 className="text-xl font-black text-gray-800 uppercase mb-2">Sẵn sàng chưa?</h3>
 <p className="text-sm text-gray-400">Cài đặt thời gian và bấm bắt đầu</p>
 </div>
-{/* Cài đặt thời gian */}
 <div className="flex items-center justify-between bg-gray-50 px-6 py-3 rounded-2xl border border-gray-200 w-full">
 <div className="flex items-center gap-2">
 <Icon name="Clock" size={20} className={isTimeLimitEnabled ? "text-orange-400" : "text-gray-300"} />
@@ -330,7 +371,6 @@ className="relative px-2 py-1.5 bg-white border border-yellow-100 shadow-sm roun
 </button>
 </div>
 ) : (
-/* --- TRẠNG THÁI CHẠY (ACTIVE) --- */
 <div className="flex flex-col h-full gap-3 animate-in slide-in-from-right">
 <div className="flex justify-between items-center bg-gray-50 px-4 py-1.5 rounded-2xl">
 <div className="flex items-center gap-2"><Icon name="ThumbsUp" size={18} className="text-green-500" /><span className="text-lg font-black text-green-600">{stats.correct}</span></div>
@@ -361,11 +401,23 @@ className="relative px-2 py-1.5 bg-white border border-yellow-100 shadow-sm roun
 </div>
 </div>
 );
-const QuizScreenView = ({ score, count, TOTAL, question, feedback, onAnswer, goHome, openSettings, dynStyle }) => {
+
+// --- VỊ TRÍ CẬP NHẬT: Thêm prop onSessionEnd vào QuizScreenView ---
+const QuizScreenView = ({ score, count, TOTAL, question, feedback, onAnswer, goHome, openSettings, dynStyle, isReviewMode, table, onSelectTable, onSessionEnd }) => {
 if (!question) return null;
 return (
 <div className="flex flex-col h-full overflow-hidden">
-<div className="pt-3 pb-2 px-4 bg-white/80 backdrop-blur-sm z-10 border-b border-gray-100 flex items-center justify-between shadow-sm"><button onClick={goHome} className="p-1.5 bg-gray-50 rounded-lg"><Icon name="ArrowLeft" size={20} /></button><h2 className="text-xs font-black text-gray-500 uppercase">CÂU {count + 1}/{TOTAL}</h2><div className="flex items-center gap-2"><div className="flex items-center gap-1"><Icon name="ThumbsUp" size={16} className="text-green-500" /><span className="font-black text-green-600 text-sm">{score}</span></div><button onClick={openSettings} className="p-1.5 border rounded-lg bg-white text-blue-500"><Icon name="Settings" size={20} /></button></div></div>
+<div className="pt-3 pb-2 px-4 bg-white/80 backdrop-blur-sm z-10 border-b border-gray-100 flex items-center justify-between shadow-sm">
+<button onClick={goHome} className={`flex items-center gap-1 rounded-lg transition-all ${isReviewMode ? 'pr-3 pl-2 bg-red-50 text-red-500' : 'p-1.5 bg-gray-50 text-gray-600'}`}>
+<Icon name="ArrowLeft" size={20} />
+{isReviewMode && <span className="text-[10px] font-black uppercase">Thoát</span>}
+</button>
+<h2 className="text-xs font-black text-gray-500 uppercase">{isReviewMode ? "ÔN TẬP SỔ TAY" : `CÂU ${count + 1}/${TOTAL}`}</h2>
+<div className="flex items-center gap-2"><div className="flex items-center gap-1"><Icon name="ThumbsUp" size={16} className="text-green-500" /><span className="font-black text-green-600 text-sm">{score}</span></div><button onClick={openSettings} className="p-1.5 border rounded-lg bg-white text-blue-500"><Icon name="Settings" size={20} /></button></div>
+</div>
+
+{!isReviewMode && <TableSelector current={table} onSelect={onSelectTable} />}
+
 <div className="flex-1 p-4 bg-[#F8FAFC] flex flex-col items-center justify-center">
 <div className="bg-white p-6 rounded-[2rem] shadow-lg w-full max-w-md text-center relative overflow-hidden border border-gray-100">
 {feedback === 'correct' && <div className="absolute inset-0 bg-green-500/90 flex items-center justify-center z-20"><Icon name="Check" size={80} className="text-white animate-bounce" /></div>}
@@ -373,10 +425,16 @@ return (
 <div style={{ fontSize: `calc(${dynStyle.number.fontSize} * 1.5)` }} className="font-black text-gray-800">{question.num1} <span className="text-orange-500">×</span> {question.num2}</div>
 </div>
 <div className="grid grid-cols-2 gap-2 w-full max-w-md mt-4">{question.answers.map((ans, idx) => (<button key={idx} onClick={() => onAnswer(ans)} disabled={feedback !== null} style={{ fontSize: `calc(${dynStyle.number.fontSize} * 0.5)` }} className={`py-4 rounded-xl font-black border-b-4 ${feedback ? 'bg-gray-50 text-gray-200' : 'bg-white text-blue-600 border-blue-50'}`}>{ans}</button>))}</div>
+
+{/* --- VỊ TRÍ CẬP NHẬT: Nút Kết thúc Trắc nghiệm --- */}
+<button onClick={onSessionEnd} className="w-full max-w-md mt-6 py-3 bg-red-50 text-red-500 rounded-xl font-black border border-red-100 hover:bg-red-100 transition-all uppercase text-xs flex items-center justify-center gap-2">
+<Icon name="Stop" size={16} fill="currentColor"/> Kết thúc
+</button>
 </div>
 </div>
 );
 };
+
 const SettingsPanelView = ({ isOpen, onClose, scale, setScale, appSize, setAppSize, ratio, setRatio }) => {
 if (!isOpen) return null;
 return (
@@ -390,8 +448,7 @@ return (
 };
 /**
 * BLOCK 5: LOGIC (CUSTOM HOOKS)
-* Cập nhật: Loại bỏ window.confirm để tuân thủ quy tắc an toàn hệ thống của Canvas.
-* Bảo toàn: Giữ nguyên 100% logic của useScaling và useMathLogic.
+* Cập nhật: Nâng cấp useMathLogic để hỗ trợ chế độ Ôn tập từ Sổ tay.
 */
 const useScaling = () => {
 const [scale, setScale] = useState(100);
@@ -416,13 +473,50 @@ return { card: { width: `${finalW}px`, height: `${finalH}px` }, number: { fontSi
 }, [scale, ratioMode]);
 return { scale, setScale, appSizeId, setAppSizeId, ratioMode, setRatioMode, appFrameClass, dynStyle };
 };
+
 const useMathLogic = (selectedTable, isRandomMode) => {
 const [studyFactor, setStudyFactor] = useState(1);
 const [currentDisplayTable, setCurrentDisplayTable] = useState(2);
 const shuffledQueueRef = useRef([]);
+
+// --- LOGIC ÔN TẬP MỚI ---
+const [isReviewing, setIsReviewing] = useState(false);
+const reviewQueue = useRef([]);
+const originalMistakes = useRef([]);
+
+const startReview = useCallback((mistakes) => {
+if (!mistakes || mistakes.length === 0) return;
+originalMistakes.current = [...mistakes];
+// Xáo trộn danh sách lỗi để học
+reviewQueue.current = [...mistakes].sort(() => Math.random() - 0.5);
+setIsReviewing(true);
+}, []);
+
+const endReview = useCallback(() => {
+setIsReviewing(false);
+reviewQueue.current = [];
+originalMistakes.current = [];
+}, []);
+
 const nextStudyStep = useCallback(() => {
+// 1. Logic cho Chế độ Ôn tập
+if (isReviewing) {
+if (reviewQueue.current.length === 0) {
+// Nếu học hết 1 lượt, xáo trộn lại từ đầu để học tiếp (vòng lặp)
+reviewQueue.current = [...originalMistakes.current].sort(() => Math.random() - 0.5);
+}
+const nextItem = reviewQueue.current.pop();
+if (nextItem) {
+setCurrentDisplayTable(nextItem.table);
+setStudyFactor(nextItem.factor);
+}
+return;
+}
+
+// 2. Logic cho Chế độ Học bình thường (Cũ)
 if (selectedTable === 'all') setCurrentDisplayTable(Math.floor(Math.random() * 8) + 2);
 else setCurrentDisplayTable(selectedTable);
+
 setStudyFactor(prev => {
 if (isRandomMode) {
 if (shuffledQueueRef.current.length === 0) shuffledQueueRef.current = [1,2,3,4,5,6,7,8,9,10].sort(()=>Math.random()-0.5);
@@ -430,58 +524,86 @@ return shuffledQueueRef.current.pop();
 }
 return prev >= 10 ? 1 : prev + 1;
 });
-}, [selectedTable, isRandomMode]);
-return { studyFactor, setStudyFactor, currentDisplayTable, nextStudyStep };
+}, [selectedTable, isRandomMode, isReviewing]); // Thêm isReviewing vào dependencies
+
+return { studyFactor, setStudyFactor, currentDisplayTable, nextStudyStep, startReview, endReview, isReviewing };
 };
+
 const useNotebook = () => {
 const [mistakes, setMistakes] = useState([]);
+
 const addMistake = useCallback((table, factor) => {
 setMistakes(prev => {
-// Kiểm tra xem phép tính này đã có trong sổ tay chưa để tránh trùng lặp
 const exists = prev.find(m => m.table === table && m.factor === factor);
 if (exists) return prev;
 return [...prev, { table, factor, timestamp: Date.now() }];
 });
 }, []);
+
 const clearNotebook = () => {
-// THAY ĐỔI: Loại bỏ window.confirm để đảm bảo ứng dụng không bị treo trong iframe
 setMistakes([]);
 };
+
 return { mistakes, addMistake, clearNotebook };
 };
 /**
 * BLOCK 6: ĐIỀU KHIỂN (CONTROLLER / APP)
-* Cập nhật: Đặt mặc định không giới hạn thời gian (isTimeLimitEnabled = false).
+* Cập nhật: Sửa lỗi logic tính sai trong chế độ Tổng hợp (đồng bộ table hiển thị và logic).
 */
 const App = () => {
 const [screen, setScreen] = useState('menu');
 const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 const [isNotebookOpen, setIsNotebookOpen] = useState(false);
-// --- VỊ TRÍ THÊM MỚI 1: State cho phiên kiểm tra ---
 const [isCheckSessionActive, setIsCheckSessionActive] = useState(false);
 const [isResultOpen, setIsResultOpen] = useState(false);
+
+const [isQuizReviewMode, setIsQuizReviewMode] = useState(false);
+
 const scaleSudo = useScaling();
+
 const [selectedTable, setSelectedTable] = useState(2);
 const [isRandomMode, setIsRandomMode] = useState(true);
+
 const [isPlaying, setIsPlaying] = useState(false);
 const [isInputMode, setIsInputMode] = useState(false);
 const [userAnswer, setUserAnswer] = useState('');
 const [checkStatus, setCheckStatus] = useState(null);
 const [stats, setStats] = useState({ correct: 0, incorrect: 0 });
-// --- CẬP NHẬT: Mặc định tắt giới hạn thời gian ---
 const [isTimeLimitEnabled, setIsTimeLimitEnabled] = useState(false);
 const [timeLimitValue, setTimeLimitValue] = useState(7);
+
 const [quizScore, setQuizScore] = useState(0);
 const [quizCount, setQuizCount] = useState(0);
 const [quizQuestion, setQuizQuestion] = useState(null);
 const [quizFeedback, setQuizFeedback] = useState(null);
+
 // Khởi tạo logic toán học từ custom hook (Block 5)
 const math = useMathLogic(selectedTable, isRandomMode);
+
 // Khởi tạo logic sổ tay (Block 5)
 const notebook = useNotebook();
-const generateQuizQuestion = useCallback(() => {
-const n1 = Math.floor(Math.random() * 8) + 2;
-const n2 = Math.floor(Math.random() * 10) + 1;
+
+const generateQuizQuestion = useCallback((forceReviewMode = null) => {
+// Xác định chế độ: Dùng tham số truyền vào (ưu tiên) hoặc state hiện tại
+const isReview = forceReviewMode !== null ? forceReviewMode : isQuizReviewMode;
+
+let n1, n2;
+
+if (isReview && notebook.mistakes.length > 0) {
+// Lấy ngẫu nhiên từ danh sách lỗi
+const randomMistake = notebook.mistakes[Math.floor(Math.random() * notebook.mistakes.length)];
+n1 = randomMistake.table;
+n2 = randomMistake.factor;
+} else {
+// Sinh ngẫu nhiên theo bảng đã chọn (selectedTable)
+if (selectedTable === 'all') {
+n1 = Math.floor(Math.random() * 8) + 2;
+} else {
+n1 = selectedTable;
+}
+n2 = Math.floor(Math.random() * 10) + 1;
+}
+
 const correct = n1 * n2;
 let ans = [correct];
 while(ans.length < 4) {
@@ -489,7 +611,8 @@ let w = Math.random() > 0.5 ? correct + Math.floor(Math.random()*5)+1 : Math.max
 if(!ans.includes(w) && w > 0) ans.push(w);
 }
 setQuizQuestion({ num1: n1, num2: n2, correctAnswer: correct, answers: ans.sort(() => Math.random() - 0.5) });
-}, []);
+}, [isQuizReviewMode, notebook.mistakes, selectedTable]);
+
 const handleQuizAnswer = (val) => {
 if(quizFeedback) return;
 if(val === quizQuestion.correctAnswer) {
@@ -504,23 +627,62 @@ if(quizCount + 1 >= 10) setScreen('menu');
 else { setQuizCount(c => c + 1); setQuizFeedback(null); generateQuizQuestion(); }
 }, 1500);
 };
-// --- VỊ TRÍ THÊM MỚI 2: Handlers cho phiên kiểm tra ---
+
 const handleSessionStart = () => {
-setStats({ correct: 0, incorrect: 0 }); // Reset điểm
-setIsCheckSessionActive(true); // Bắt đầu game
+setStats({ correct: 0, incorrect: 0 });
+setIsCheckSessionActive(true);
 math.nextStudyStep();
 };
+
 const handleSessionEnd = () => {
-setIsCheckSessionActive(false); // Dừng game
-setIsResultOpen(true); // Mở bảng kết quả
+setIsCheckSessionActive(false);
+setIsResultOpen(true);
 };
-// Logic Timer (Cập nhật điều kiện isCheckSessionActive)
+
+const handleQuizEnd = () => {
+setStats({
+correct: quizScore,
+incorrect: quizCount - quizScore
+});
+setIsResultOpen(true);
+setScreen('menu');
+if (isQuizReviewMode) {
+setIsNotebookOpen(true);
+}
+setIsQuizReviewMode(false);
+};
+
+const handleReviewStudy = () => {
+setIsNotebookOpen(false);
+math.startReview(notebook.mistakes);
+setIsInputMode(false);
+setScreen('study');
+math.nextStudyStep();
+};
+
+const handleReviewCheck = () => {
+setIsNotebookOpen(false);
+math.startReview(notebook.mistakes);
+setIsInputMode(true);
+setIsCheckSessionActive(false);
+setScreen('study');
+math.nextStudyStep();
+};
+
+const handleReviewQuiz = () => {
+setIsNotebookOpen(false);
+setIsQuizReviewMode(true);
+setQuizScore(0);
+setQuizCount(0);
+generateQuizQuestion(true);
+setScreen('quiz');
+};
+
 useEffect(() => {
 let itv;
 if (isPlaying) {
 itv = setInterval(math.nextStudyStep, 3000);
 } else if (isInputMode && isCheckSessionActive && isTimeLimitEnabled && !userAnswer && !checkStatus) {
-// Chỉ chạy timer khi đang trong phiên kiểm tra (isCheckSessionActive = true)
 itv = setInterval(() => {
 setStats(p => ({...p, incorrect: p.incorrect + 1}));
 setCheckStatus('incorrect');
@@ -530,7 +692,9 @@ setTimeout(math.nextStudyStep, 1500);
 }
 return () => clearInterval(itv);
 }, [isPlaying, isInputMode, isCheckSessionActive, isTimeLimitEnabled, timeLimitValue, userAnswer, checkStatus, math.nextStudyStep, math.currentDisplayTable, math.studyFactor]);
+
 useEffect(() => { setUserAnswer(''); setCheckStatus(null); }, [math.studyFactor]);
+
 return (
 <div className="min-h-screen bg-[#F0F4F8] flex items-center justify-center p-0 md:p-4">
 <div className={`w-full ${scaleSudo.appFrameClass} bg-white md:rounded-[3rem] shadow-2xl relative overflow-hidden border-2 md:border-[12px] border-white flex flex-col`}>
@@ -544,21 +708,39 @@ math.nextStudyStep();
 }}
 onStartCheck={() => {
 setIsInputMode(true);
-setIsCheckSessionActive(false); // Đặt về false để hiện màn hình chờ "Sẵn sàng chưa?"
+setIsCheckSessionActive(false);
 setScreen('study');
 math.nextStudyStep();
 }}
-onStartQuiz={() => { setQuizScore(0); setQuizCount(0); generateQuizQuestion(); setScreen('quiz'); }}
+onStartQuiz={() => {
+setIsQuizReviewMode(false);
+setQuizScore(0); setQuizCount(0); generateQuizQuestion(false); setScreen('quiz');
+}}
 onOpenSettings={() => setIsSettingsOpen(true)}
 onOpenNotebook={() => setIsNotebookOpen(true)}
 notebookCount={notebook.mistakes.length}
 />
 )}
+
 {screen === 'study' && (
 <StudyScreenView
-table={selectedTable} factor={math.studyFactor} isInputMode={isInputMode} isRandom={isRandomMode} isPlaying={isPlaying}
+// --- SỬA LỖI TẠI ĐÂY: Truyền math.currentDisplayTable thay vì selectedTable ---
+table={math.currentDisplayTable}
+factor={math.studyFactor} isInputMode={isInputMode} isRandom={isRandomMode} isPlaying={isPlaying}
 userAnswer={userAnswer} checkStatus={checkStatus} stats={stats} timeLimitValue={timeLimitValue} isTimeLimitEnabled={isTimeLimitEnabled}
-style={scaleSudo.dynStyle} onBack={() => {setScreen('menu'); setIsPlaying(false); setIsCheckSessionActive(false);}} onOpenSettings={() => setIsSettingsOpen(true)} onSelectTable={(t) => {setSelectedTable(t); math.nextStudyStep();}}
+style={scaleSudo.dynStyle}
+onBack={() => {
+setScreen('menu');
+setIsPlaying(false);
+setIsCheckSessionActive(false);
+
+if (math.isReviewing) {
+setIsNotebookOpen(true);
+}
+
+math.endReview();
+}}
+onOpenSettings={() => setIsSettingsOpen(true)} onSelectTable={(t) => {setSelectedTable(t); math.nextStudyStep();}}
 onToggleRandom={() => setIsRandomMode(!isRandomMode)} onRefresh={() => {setIsPlaying(false); math.nextStudyStep();}} onTogglePlay={() => setIsPlaying(!isPlaying)} onStop={() => setIsPlaying(false)}
 onEnterInputMode={(v) => {setIsInputMode(v); setIsPlaying(false); setStats({correct:0, incorrect:0});}}
 onNumberInput={(n) => setUserAnswer(p => p.length < 3 ? p + n : p)} onDeleteInput={() => setUserAnswer(p => p.slice(0, -1))}
@@ -577,32 +759,54 @@ setTimeout(math.nextStudyStep, 1500);
 onToggleTimeLimit={() => setIsTimeLimitEnabled(!isTimeLimitEnabled)} onTimeLimitChange={setTimeLimitValue}
 onOpenNotebook={() => setIsNotebookOpen(true)}
 notebookCount={notebook.mistakes.length}
-// --- VỊ TRÍ CẬP NHẬT: Truyền props cho phiên kiểm tra ---
 isCheckSessionActive={isCheckSessionActive}
 onSessionStart={handleSessionStart}
 onSessionEnd={handleSessionEnd}
+isReviewMode={math.isReviewing}
 />
 )}
+
 {screen === 'quiz' && (
 <QuizScreenView
 score={quizScore} count={quizCount} TOTAL={10} question={quizQuestion} feedback={quizFeedback}
-onAnswer={handleQuizAnswer} goHome={() => setScreen('menu')} openSettings={() => setIsSettingsOpen(true)}
+onAnswer={handleQuizAnswer}
+goHome={() => {
+setScreen('menu');
+if (isQuizReviewMode) {
+setIsNotebookOpen(true);
+}
+setIsQuizReviewMode(false);
+}}
+openSettings={() => setIsSettingsOpen(true)}
 dynStyle={scaleSudo.dynStyle}
+isReviewMode={isQuizReviewMode}
+table={selectedTable}
+onSelectTable={(t) => setSelectedTable(t)}
+onSessionEnd={handleQuizEnd}
 />
 )}
-<NotebookScreenView isOpen={isNotebookOpen} onClose={() => setIsNotebookOpen(false)} mistakes={notebook.mistakes} onClear={notebook.clearNotebook} dynStyle={scaleSudo.dynStyle} />
-{/* --- VỊ TRÍ THÊM MỚI 3: Bảng kết quả --- */}
-<ResultSummaryView
-isOpen={isResultOpen}
-onClose={() => setIsResultOpen(false)}
-stats={stats}
+
+<NotebookScreenView
+isOpen={isNotebookOpen}
+onClose={() => setIsNotebookOpen(false)}
+mistakes={notebook.mistakes}
+onClear={notebook.clearNotebook}
+dynStyle={scaleSudo.dynStyle}
+onReviewStudy={handleReviewStudy}
+onReviewCheck={handleReviewCheck}
+onReviewQuiz={handleReviewQuiz}
 />
+
+<ResultSummaryView isOpen={isResultOpen} onClose={() => setIsResultOpen(false)} stats={stats} />
+
 <SettingsPanelView isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} scale={scaleSudo.scale} setScale={scaleSudo.setScale} appSize={scaleSudo.appSizeId} setAppSize={scaleSudo.setAppSizeId} ratio={scaleSudo.ratioMode} setRatio={scaleSudo.setRatioMode} />
 </div>
 </div>
 </div>
 );
 };
+
+
 /**
 * PHẦN KẾT THÚC (END)
 */
