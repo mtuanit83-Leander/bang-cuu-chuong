@@ -95,8 +95,8 @@ active ? `bg-${color}-100 text-${color}-600 shadow-inner ring-2 ring-${color}-20
 );
 /**
 * BLOCK 3: KHỐI (BLOCKS)
-* Version: ver1.4
-* Cập nhật: Giảm chiều cao tối thiểu nút bấm (min-h-[30px]) để giao diện nhỏ gọn hơn.
+* Version: ver1.6
+* Cập nhật: Đổi KeypadBlock sang h-full và content-end (căn dưới) trên mobile để sát với nút Kết thúc.
 */
 const TableSelector = ({ current, onSelect }) => (
 <div className="flex justify-center items-center gap-1.5 overflow-x-auto no-scrollbar py-2 px-4 bg-white/50 border-b border-gray-100">
@@ -144,7 +144,7 @@ className={`bg-white rounded-[2rem] shadow-lg border border-gray-100 flex flex-c
 );
 
 const KeypadBlock = ({ onNumber, onDelete, onSubmit, style }) => (
-<div className="grid grid-cols-3 gap-1 w-full h-[90%] md:h-full content-center">
+<div className="grid grid-cols-3 gap-1 w-full h-full content-end md:content-center">
 {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
 <button
 key={n}
@@ -853,6 +853,3 @@ root.render(<App />);
 </script>
 </body>
 </html>
-
-
-
