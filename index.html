@@ -165,16 +165,19 @@ const KeypadBlock = ({ onNumber, onDelete, onSubmit, style }) => (
 
 /**
 * BLOCK 4: MÀN HÌNH (VIEWS)
-* Cập nhật: Tối ưu layout StudyScreenView (chế độ Kiểm tra) để bàn phím giãn nở tốt trên mobile.
+* Cập nhật: Thêm thanh cuộn (scroll) cho Menu và StudyScreen để hỗ trợ màn hình dọc.
 */
 
 const MenuScreenView = ({ onStartStudy, onStartCheck, onStartQuiz, onOpenSettings, onOpenNotebook, notebookCount }) => (
-<div className="flex flex-col items-center justify-center min-h-full space-y-8 p-6 relative">
+// --- VỊ TRÍ CẬP NHẬT 1: Thêm wrapper hỗ trợ cuộn ---
+<div className="h-full w-full overflow-y-auto no-scrollbar relative">
+<div className="min-h-full flex flex-col items-center justify-center space-y-8 p-6">
+
 {/* Nút truy cập nhanh Sổ tay & Cài đặt */}
-<div className="absolute top-4 right-4 flex gap-2">
+<div className="absolute top-4 right-4 flex gap-2 z-20">
 <button
 onClick={onOpenNotebook}
-className="relative px-3 py-2 bg-white shadow-sm rounded-xl text-yellow-600 hover:bg-yellow-50 border border-yellow-100 transition-all z-20 active:scale-90 flex items-center gap-1"
+className="relative px-3 py-2 bg-white shadow-sm rounded-xl text-yellow-600 hover:bg-yellow-50 border border-yellow-100 transition-all active:scale-90 flex items-center gap-1"
 >
 <Icon name="Notebook" size={22} />
 <span className="font-black text-sm">Sai</span>
@@ -184,12 +187,12 @@ className="relative px-3 py-2 bg-white shadow-sm rounded-xl text-yellow-600 hove
 </span>
 )}
 </button>
-<button onClick={onOpenSettings} className="p-2.5 bg-white shadow-sm rounded-full text-gray-400 hover:text-blue-600 border border-gray-100 z-20 active:scale-90">
+<button onClick={onOpenSettings} className="p-2.5 bg-white shadow-sm rounded-full text-gray-400 hover:text-blue-600 border border-gray-100 active:scale-90">
 <Icon name="Settings" size={22} />
 </button>
 </div>
 
-<h1 className="text-4xl md:text-7xl font-black text-blue-600 mb-2 leading-tight">Bé Vui Học Toán</h1>
+<h1 className="text-4xl md:text-7xl font-black text-blue-600 mb-2 leading-tight text-center">Bé Vui Học Toán</h1>
 
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-4xl">
 <button onClick={onStartStudy} className="p-8 bg-white rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all border border-gray-100 flex flex-col items-center active:scale-95 group">
@@ -209,6 +212,7 @@ className="relative px-3 py-2 bg-white shadow-sm rounded-xl text-yellow-600 hove
 <span className="text-xl font-black text-gray-800">Luyện Tập</span>
 <span className="text-[10px] text-gray-400 mt-1 uppercase tracking-wide">Trắc nghiệm</span>
 </button>
+</div>
 </div>
 </div>
 );
@@ -353,7 +357,8 @@ className="relative px-2 py-1.5 bg-white border border-yellow-100 shadow-sm roun
 <FlashCardBlock table={table === 'all' ? Math.floor(Math.random()*8)+2 : table} factor={factor} isInputMode={isInputMode} userAnswer={userAnswer} checkStatus={checkStatus} isPlaying={isPlaying} style={style} />
 <div style={style.card} className="flex flex-col transition-all duration-500">
 {isInputMode ? (
-<div className="bg-white p-5 md:p-6 rounded-[2rem] shadow-lg border border-gray-100 flex flex-col gap-3 h-full justify-center w-full relative overflow-hidden">
+// --- VỊ TRÍ CẬP NHẬT 2: Đổi overflow-hidden thành overflow-y-auto ---
+<div className="bg-white p-5 md:p-6 rounded-[2rem] shadow-lg border border-gray-100 flex flex-col gap-3 h-full justify-center w-full relative overflow-y-auto no-scrollbar">
 {!isCheckSessionActive ? (
 <div className="flex flex-col items-center justify-center h-full gap-6 animate-in fade-in">
 <div className="text-center">
@@ -375,7 +380,6 @@ className="relative px-2 py-1.5 bg-white border border-yellow-100 shadow-sm roun
 </button>
 </div>
 ) : (
-/* --- VỊ TRÍ CẬP NHẬT: Tối ưu layout Active Mode (Flex grow) --- */
 <div className="flex flex-col h-full gap-2 md:gap-4 animate-in slide-in-from-right">
 <div className="flex justify-between items-center bg-gray-50 px-4 py-2 rounded-2xl flex-shrink-0">
 <div className="flex items-center gap-2"><Icon name="ThumbsUp" size={18} className="text-green-500" /><span className="text-lg font-black text-green-600">{stats.correct}</span></div>
@@ -383,7 +387,6 @@ className="relative px-2 py-1.5 bg-white border border-yellow-100 shadow-sm roun
 <div className="flex items-center gap-2"><Icon name="ThumbsDown" size={18} className="text-red-400" /><span className="text-lg font-black text-red-400">{stats.incorrect}</span></div>
 </div>
 
-{/* Keypad Container giãn nở tối đa */}
 <div className="flex-1 min-h-0">
 <KeypadBlock onNumber={onNumberInput} onDelete={onDeleteInput} onSubmit={onSubmitInput} style={style} />
 </div>
