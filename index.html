@@ -94,7 +94,7 @@ active ? `bg-${color}-100 text-${color}-600 shadow-inner ring-2 ring-${color}-20
 );
 /**
 * BLOCK 3: KHỐI (BLOCKS)
-* Cập nhật: Tối ưu lại FlashCardBlock để hiển thị phép tính đẹp hơn, không bị khuất trên màn hình dọc.
+* Cập nhật: Tối ưu FlashCardBlock: Căn trên (Top), giới hạn chiều cao max-h, thu nhỏ nội dung để hiển thị tốt trên điện thoại.
 */
 const TableSelector = ({ current, onSelect }) => (
 <div className="flex justify-center items-center gap-1.5 overflow-x-auto no-scrollbar py-2 px-4 bg-white/50 border-b border-gray-100">
@@ -108,19 +108,16 @@ const TableSelector = ({ current, onSelect }) => (
 const FlashCardBlock = ({ table, factor, isInputMode, userAnswer, checkStatus, isPlaying, style }) => (
 <div
 style={style.card}
-className={`bg-white rounded-[2rem] shadow-lg border border-gray-100 flex flex-col items-center justify-center sync-scale relative overflow-hidden ${isPlaying ? 'ring-4 ring-green-50 scale-[1.02]' : ''}`}
+className={`bg-white rounded-[2rem] shadow-lg border border-gray-100 flex flex-col items-center justify-start pt-10 md:justify-center md:pt-0 sync-scale relative overflow-hidden max-h-[35vh] md:max-h-none ${isPlaying ? 'ring-4 ring-green-50 scale-[1.02]' : ''}`}
 >
-{/* --- VỊ TRÍ CẬP NHẬT: Gom nhóm nội dung vào giữa, bỏ flex-1 để tránh bị đẩy quá xa --- */}
-<div className="flex flex-col items-center justify-center gap-2 md:gap-4 w-full py-4">
+{/* --- VỊ TRÍ CẬP NHẬT: scale-75 origin-top, gap-0 --- */}
+<div className="flex flex-col items-center justify-center gap-0 w-full py-2 scale-75 md:scale-100 origin-top">
 {/* Hàng 1: Phép tính */}
 <div className="flex items-center justify-center">
 <span style={style.number} className="font-black text-gray-800 leading-none">{table}</span>
 <span style={style.operator} className="text-gray-200 font-light mx-2 md:mx-4">×</span>
 <span style={style.number} className="font-black text-blue-600 leading-none">{factor}</span>
 </div>
-
-{/* Divider trang trí */}
-<div className="w-16 md:w-24 h-1 bg-gray-100 rounded-full"></div>
 
 {/* Hàng 2: Kết quả / Ô nhập */}
 <div className="flex items-center justify-center relative">
@@ -177,21 +174,21 @@ className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl border-b-4 border
 </button>
 </div>
 );
+
+
+
 /**
 * BLOCK 4: MÀN HÌNH (VIEWS)
-* Cập nhật: Thêm thanh cuộn (scroll) cho Menu và StudyScreen để hỗ trợ màn hình dọc.
+* Cập nhật: Thay đổi căn chỉnh (Alignment) của StudyScreenView sang Top trên mobile để tối ưu không gian.
 */
 
 const MenuScreenView = ({ onStartStudy, onStartCheck, onStartQuiz, onOpenSettings, onOpenNotebook, notebookCount }) => (
-// --- VỊ TRÍ CẬP NHẬT 1: Thêm wrapper hỗ trợ cuộn ---
-<div className="h-full w-full overflow-y-auto no-scrollbar relative">
-<div className="min-h-full flex flex-col items-center justify-center space-y-8 p-6">
-
+<div className="flex flex-col items-center justify-center min-h-full space-y-8 p-6 relative">
 {/* Nút truy cập nhanh Sổ tay & Cài đặt */}
-<div className="absolute top-4 right-4 flex gap-2 z-20">
+<div className="absolute top-4 right-4 flex gap-2">
 <button
 onClick={onOpenNotebook}
-className="relative px-3 py-2 bg-white shadow-sm rounded-xl text-yellow-600 hover:bg-yellow-50 border border-yellow-100 transition-all active:scale-90 flex items-center gap-1"
+className="relative px-3 py-2 bg-white shadow-sm rounded-xl text-yellow-600 hover:bg-yellow-50 border border-yellow-100 transition-all z-20 active:scale-90 flex items-center gap-1"
 >
 <Icon name="Notebook" size={22} />
 <span className="font-black text-sm">Sai</span>
@@ -201,12 +198,12 @@ className="relative px-3 py-2 bg-white shadow-sm rounded-xl text-yellow-600 hove
 </span>
 )}
 </button>
-<button onClick={onOpenSettings} className="p-2.5 bg-white shadow-sm rounded-full text-gray-400 hover:text-blue-600 border border-gray-100 active:scale-90">
+<button onClick={onOpenSettings} className="p-2.5 bg-white shadow-sm rounded-full text-gray-400 hover:text-blue-600 border border-gray-100 z-20 active:scale-90">
 <Icon name="Settings" size={22} />
 </button>
 </div>
 
-<h1 className="text-4xl md:text-7xl font-black text-blue-600 mb-2 leading-tight text-center">Bé Vui Học Toán</h1>
+<h1 className="text-4xl md:text-7xl font-black text-blue-600 mb-2 leading-tight">Bé Vui Học Toán</h1>
 
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-4xl">
 <button onClick={onStartStudy} className="p-8 bg-white rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all border border-gray-100 flex flex-col items-center active:scale-95 group">
@@ -226,7 +223,6 @@ className="relative px-3 py-2 bg-white shadow-sm rounded-xl text-yellow-600 hove
 <span className="text-xl font-black text-gray-800">Luyện Tập</span>
 <span className="text-[10px] text-gray-400 mt-1 uppercase tracking-wide">Trắc nghiệm</span>
 </button>
-</div>
 </div>
 </div>
 );
@@ -366,12 +362,12 @@ className="relative px-2 py-1.5 bg-white border border-yellow-100 shadow-sm roun
 
 {!isReviewMode && <TableSelector current={table} onSelect={onSelectTable} />}
 
-<div className="flex-1 overflow-y-auto p-4 md:p-6 no-scrollbar bg-[#F8FAFC] flex flex-col items-center justify-center relative">
+{/* --- VỊ TRÍ CẬP NHẬT: Thay đổi justify-center thành justify-start pt-2 ... --- */}
+<div className="flex-1 overflow-y-auto p-4 md:p-6 no-scrollbar bg-[#F8FAFC] flex flex-col items-center justify-start pt-2 md:justify-center md:pt-0 relative">
 <div style={{ gap: style.containerGap }} className="flex flex-col md:flex-row items-center md:items-stretch justify-center w-full transition-all duration-500">
 <FlashCardBlock table={table === 'all' ? Math.floor(Math.random()*8)+2 : table} factor={factor} isInputMode={isInputMode} userAnswer={userAnswer} checkStatus={checkStatus} isPlaying={isPlaying} style={style} />
 <div style={style.card} className="flex flex-col transition-all duration-500">
 {isInputMode ? (
-// --- VỊ TRÍ CẬP NHẬT 2: Đổi overflow-hidden thành overflow-y-auto ---
 <div className="bg-white p-5 md:p-6 rounded-[2rem] shadow-lg border border-gray-100 flex flex-col gap-3 h-full justify-center w-full relative overflow-y-auto no-scrollbar">
 {!isCheckSessionActive ? (
 <div className="flex flex-col items-center justify-center h-full gap-6 animate-in fade-in">
@@ -472,6 +468,10 @@ return (
 </div>
 );
 };
+
+
+
+
 /**
 * BLOCK 5: LOGIC (CUSTOM HOOKS)
 * Cập nhật: Nâng cấp useNotebook để đếm số lần sai (count).
