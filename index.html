@@ -144,7 +144,7 @@ className={`bg-white rounded-[2rem] shadow-lg border border-gray-100 flex flex-c
 );
 
 const KeypadBlock = ({ onNumber, onDelete, onSubmit, style }) => (
-<div className="grid grid-cols-3 gap-2 w-full h-full content-center">
+<div className="grid grid-cols-3 gap-2 w-full h-[70%] md:h-full content-center">
 {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
 <button
 key={n}
