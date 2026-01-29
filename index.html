@@ -24,7 +24,9 @@ input[type=range]::-webkit-slider-thumb { height: 24px; width: 24px; border-radi
 const { useState, useEffect, useCallback, useRef, useMemo } = React;
 /**
 * BLOCK 1: TÀI NGUYÊN (RESOURCES)
-* Đã cập nhật icon Notebook thành hình Tam giác cảnh báo (Alert Triangle).
+* Version: ver1.0
+* Đã sửa lỗi Syntax Error: Bao bọc các thẻ path của icon Notebook bằng React Fragment <>...</>.
+* Bảo toàn 100% các định nghĩa biểu tượng khác.
 */
 const ICONS_SVG = {
 BookOpen: <><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></>,
@@ -51,7 +53,6 @@ XCircle: <><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 
 Notebook: <><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><line x1="12" x2="12" y1="9" y2="13" /><line x1="12" x2="12.01" y1="17" y2="17" /></>,
 Trash: <><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></>,
 };
-
 /**
 * BLOCK 2: NGUYÊN TỬ (ATOMS)
 * Truy xuất đúng ICONS_SVG từ Block 1
@@ -474,7 +475,8 @@ return (
 
 /**
 * BLOCK 5: LOGIC (CUSTOM HOOKS)
-* Cập nhật: Nâng cấp useNotebook để đếm số lần sai (count).
+* Version: ver1.0
+* Cập nhật: Giảm containerGap từ 24 xuống 8 để thu hẹp khoảng cách giữa Flashcard và bảng điều khiển.
 */
 const useScaling = () => {
 const [scale, setScale] = useState(100);
@@ -495,7 +497,16 @@ if (ratioMode === '1:1') { bW = 380; bH = 380; }
 else if (ratioMode === '4:3') { bW = 420; bH = 315; }
 else if (ratioMode === '16:9') { bW = 480; bH = 270; }
 const finalW = bW * s, finalH = bH * s, minDim = Math.min(finalW, finalH);
-return { card: { width: `${finalW}px`, height: `${finalH}px` }, number: { fontSize: `${Math.min(80, minDim * 0.25)}px` }, operator: { fontSize: `${Math.min(40, minDim * 0.15)}px` }, inputWidth: { minWidth: `${finalW * 0.4}px` }, feedbackText: { fontSize: `${Math.max(10, minDim * 0.04)}px` }, keypadText: { fontSize: `${30 * s}px` }, keypadBtnPadding: { padding: `${12 * s}px 0` }, containerGap: `${24 * s}px` };
+return {
+card: { width: `${finalW}px`, height: `${finalH}px` },
+number: { fontSize: `${Math.min(80, minDim * 0.25)}px` },
+operator: { fontSize: `${Math.min(40, minDim * 0.15)}px` },
+inputWidth: { minWidth: `${finalW * 0.4}px` },
+feedbackText: { fontSize: `${Math.max(10, minDim * 0.04)}px` },
+keypadText: { fontSize: `${30 * s}px` },
+keypadBtnPadding: { padding: `${12 * s}px 0` },
+containerGap: `${8 * s}px` // CHANGED HERE: 24 -> 8
+};
 }, [scale, ratioMode]);
 return { scale, setScale, appSizeId, setAppSizeId, ratioMode, setRatioMode, appFrameClass, dynStyle };
 };
@@ -505,7 +516,7 @@ const [studyFactor, setStudyFactor] = useState(1);
 const [currentDisplayTable, setCurrentDisplayTable] = useState(2);
 const shuffledQueueRef = useRef([]);
 
-// Logic ôn tập (Giữ nguyên từ bản trước)
+// Logic ôn tập
 const [isReviewing, setIsReviewing] = useState(false);
 const reviewQueue = useRef([]);
 const originalMistakes = useRef([]);
@@ -554,24 +565,14 @@ return { studyFactor, setStudyFactor, currentDisplayTable, nextStudyStep, startR
 const useNotebook = () => {
 const [mistakes, setMistakes] = useState([]);
 
-// --- VỊ TRÍ CẬP NHẬT: Logic đếm số lần sai ---
 const addMistake = useCallback((table, factor) => {
 setMistakes(prev => {
-// Tìm xem phép tính đã tồn tại chưa
 const index = prev.findIndex(m => m.table === table && m.factor === factor);
-
 if (index !== -1) {
-// Nếu đã có -> Tăng count lên 1
 const newMistakes = [...prev];
-newMistakes[index] = {
-...newMistakes[index],
-count: (newMistakes[index].count || 1) + 1,
-timestamp: Date.now()
-};
+newMistakes[index] = { ...newMistakes[index], count: (newMistakes[index].count || 1) + 1, timestamp: Date.now() };
 return newMistakes;
 }
-
-// Nếu chưa có -> Thêm mới với count = 1
 return [...prev, { table, factor, count: 1, timestamp: Date.now() }];
 });
 }, []);
@@ -582,6 +583,7 @@ setMistakes([]);
 
 return { mistakes, addMistake, clearNotebook };
 };
+
 /**
 * BLOCK 6: ĐIỀU KHIỂN (CONTROLLER / APP)
 * Cập nhật: Sửa lỗi logic tính sai trong chế độ Tổng hợp (đồng bộ table hiển thị và logic).
