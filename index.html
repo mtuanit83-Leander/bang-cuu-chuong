@@ -364,7 +364,7 @@ className="relative px-2 py-1.5 bg-white border border-yellow-100 shadow-sm roun
 
 {/* --- VỊ TRÍ CẬP NHẬT: Thay đổi justify-center thành justify-start pt-2 ... --- */}
 <div className="flex-1 overflow-y-auto p-4 md:p-6 no-scrollbar bg-[#F8FAFC] flex flex-col items-center justify-start pt-2 md:justify-center md:pt-0 relative">
-<div style={{ gap: style.containerGap }} className="flex flex-col md:flex-row items-center md:items-stretch justify-center w-full transition-all duration-500">
+<div style={{ gap: style.containerGap }} className="flex flex-col md:flex-row items-center md:items-stretch justify-center w-full transition-all duration-100">
 <FlashCardBlock table={table === 'all' ? Math.floor(Math.random()*8)+2 : table} factor={factor} isInputMode={isInputMode} userAnswer={userAnswer} checkStatus={checkStatus} isPlaying={isPlaying} style={style} />
 <div style={style.card} className="flex flex-col transition-all duration-500">
 {isInputMode ? (
@@ -851,3 +851,4 @@ root.render(<App />);
 </script>
 </body>
 </html>
+
