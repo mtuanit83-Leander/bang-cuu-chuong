@@ -93,89 +93,89 @@ active ? `bg-${color}-100 text-${color}-600 shadow-inner ring-2 ring-${color}-20
 </div>
 );
 /**
-* TẦNG 3: KHỐI (BLOCKS)
-* Kết hợp nguyên tử thành cụm chức năng.
+* BLOCK 3: KHỐI (BLOCKS)
+* Cập nhật: Gom nhóm phép tính và kết quả sát nhau hơn (gap-0), bỏ divider.
 */
-
 const TableSelector = ({ current, onSelect }) => (
 <div className="flex justify-center items-center gap-1.5 overflow-x-auto no-scrollbar py-2 px-4 bg-white/50 border-b border-gray-100">
 {[2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-<button
-key={num} onClick={() => onSelect(num)}
-className={`flex-shrink-0 w-8 h-8 md:w-9 md:h-9 rounded-lg font-black text-xs transition-all border
-${current === num ? 'bg-blue-600 text-white border-blue-600 scale-105 shadow-md' : 'bg-white text-gray-400 border-gray-100 hover:bg-gray-50'}`}
->
-{num}
-</button>
+<button key={num} onClick={() => onSelect(num)} className={`flex-shrink-0 w-8 h-8 md:w-9 md:h-9 rounded-lg font-black text-xs transition-all border ${current === num ? 'bg-blue-600 text-white border-blue-600 scale-105 shadow-md' : 'bg-white text-gray-400 border-gray-100 hover:bg-gray-50'}`}>{num}</button>
 ))}
-<button
-onClick={() => onSelect('all')}
-className={`flex-shrink-0 w-8 h-8 md:w-9 md:h-9 rounded-lg font-black text-xs transition-all border flex items-center justify-center
-${current === 'all' ? 'bg-purple-600 text-white border-purple-600 scale-105 shadow-md' : 'bg-white text-purple-400 border-purple-100 hover:bg-purple-50'}`}
->
-<Icon name="Sigma" size={16} />
-</button>
+<button onClick={() => onSelect('all')} className={`flex-shrink-0 w-8 h-8 md:w-9 md:h-9 rounded-lg font-black text-xs transition-all border flex items-center justify-center ${current === 'all' ? 'bg-purple-600 text-white border-purple-600 scale-105 shadow-md' : 'bg-white text-purple-400 border-purple-100 hover:bg-purple-50'}`}><Icon name="Sigma" size={16} /></button>
 </div>
 );
 
 const FlashCardBlock = ({ table, factor, isInputMode, userAnswer, checkStatus, isPlaying, style }) => (
 <div
 style={style.card}
-className={`bg-white rounded-[2rem] shadow-lg border border-gray-100 flex flex-col items-center justify-center sync-scale relative overflow-hidden ${isPlaying ? 'ring-4 ring-green-50 scale-[1.02]' : ''}`}
+className={`bg-white rounded-[2rem] shadow-lg border border-gray-100 flex flex-col items-center justify-start pt-12 md:justify-center md:pt-0 sync-scale relative overflow-hidden ${isPlaying ? 'ring-4 ring-green-50 scale-[1.02]' : ''}`}
 >
-<div className="flex items-center justify-center flex-1 w-full">
+{/* --- VỊ TRÍ CẬP NHẬT: gap-0 để sát nhau, bỏ divider --- */}
+<div className="flex flex-col items-center justify-center gap-0 w-full py-4 scale-75 md:scale-100 origin-top">
+{/* Hàng 1: Phép tính */}
+<div className="flex items-center justify-center">
 <span style={style.number} className="font-black text-gray-800 leading-none">{table}</span>
 <span style={style.operator} className="text-gray-200 font-light mx-2 md:mx-4">×</span>
 <span style={style.number} className="font-black text-blue-600 leading-none">{factor}</span>
 </div>
-<div className="w-full px-8 opacity-50"><div className="w-full h-0.5 bg-gray-50"></div></div>
-<div className="flex items-center justify-center flex-1 w-full relative">
-<span style={style.operator} className="text-gray-200 font-light absolute left-6 md:left-8">=</span>
+
+{/* Đã xóa Divider */}
+
+{/* Hàng 2: Kết quả / Ô nhập */}
+<div className="flex items-center justify-center relative">
+<span style={style.operator} className="text-gray-200 font-light mr-2 md:mr-4">=</span>
 {isInputMode ? (
-<div style={{...style.number, ...style.inputWidth}} className={`font-black text-center border-b-2 md:border-b-4 border-dashed leading-none mx-2 md:mx-4 ${checkStatus === 'correct' ? 'text-green-500 border-green-500' : checkStatus === 'incorrect' ? 'text-red-500 border-red-500' : 'text-blue-600 border-blue-100'}`}>
+<div style={{...style.number, ...style.inputWidth}} className={`font-black text-center border-b-2 md:border-b-4 border-dashed leading-none ${checkStatus === 'correct' ? 'text-green-500 border-green-500' : checkStatus === 'incorrect' ? 'text-red-500 border-red-500' : 'text-blue-600 border-blue-100'}`}>
 {userAnswer || '?'}
 </div>
 ) : (
 <span style={style.number} className="font-black text-green-500 leading-none">{table * factor}</span>
 )}
 </div>
+</div>
+
+{/* Thông báo đúng sai (Overlay dưới cùng) */}
 {checkStatus && (
 <div style={style.feedbackText} className="absolute bottom-4 font-black animate-in fade-in slide-in-from-bottom-2 w-full text-center">
-<span className={`px-4 py-1 rounded-full ${checkStatus === 'correct' ? 'bg-green-100 text-green-600' : 'bg-red-50 text-red-500'}`}>
-{checkStatus === 'correct' ? 'CHÍNH XÁC!' : `ĐÁP ÁN LÀ ${table * factor}`}
-</span>
+<span className={`px-4 py-1 rounded-full ${checkStatus === 'correct' ? 'bg-green-100 text-green-600' : 'bg-red-50 text-red-500'}`}>{checkStatus === 'correct' ? 'CHÍNH XÁC!' : `ĐÁP ÁN LÀ ${table * factor}`}</span>
 </div>
 )}
 </div>
 );
 
 const KeypadBlock = ({ onNumber, onDelete, onSubmit, style }) => (
-<div className="grid grid-cols-3 gap-2 flex-1 items-center">
+<div className="grid grid-cols-3 gap-2 w-full h-full content-center">
 {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
-<button key={n} onClick={() => onNumber(n.toString())} style={{...style.keypadText, ...style.keypadBtnPadding}} className="bg-white hover:bg-blue-50 text-blue-600 font-black rounded-xl border-b-4 border-gray-100 active:border-b-0 h-full">{n}</button>
+<button
+key={n}
+onClick={() => onNumber(n.toString())}
+style={{...style.keypadText}}
+className="bg-white hover:bg-blue-50 text-blue-600 font-black rounded-xl border-b-4 border-gray-100 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all h-full min-h-[50px] flex items-center justify-center shadow-sm"
+>
+{n}
+</button>
 ))}
-<button onClick={onDelete} className="bg-red-50 text-red-400 rounded-xl border-b-4 border-red-100 flex items-center justify-center h-full active:border-b-0"><Icon name="Delete" size={24} /></button>
-<button onClick={() => onNumber('0')} style={style.keypadText} className="bg-white text-blue-600 font-black rounded-xl border-b-4 border-gray-100 h-full active:border-b-0">0</button>
-<button onClick={onSubmit} className="bg-blue-600 text-white rounded-xl border-b-4 border-blue-800 flex items-center justify-center shadow-lg h-full active:border-b-0 hover:bg-blue-700"><Icon name="Check" size={28} /></button>
+<button
+onClick={onDelete}
+className="bg-red-50 hover:bg-red-100 text-red-400 rounded-xl border-b-4 border-red-100 active:border-b-0 active:translate-y-1 transition-all h-full min-h-[50px] flex items-center justify-center shadow-sm"
+>
+<Icon name="Delete" size={24} />
+</button>
+<button
+onClick={() => onNumber('0')}
+style={style.keypadText}
+className="bg-white hover:bg-blue-50 text-blue-600 font-black rounded-xl border-b-4 border-gray-100 active:border-b-0 active:translate-y-1 transition-all h-full min-h-[50px] flex items-center justify-center shadow-sm"
+>
+0
+</button>
+<button
+onClick={onSubmit}
+className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl border-b-4 border-blue-800 active:border-b-0 active:translate-y-1 transition-all shadow-lg h-full min-h-[50px] flex items-center justify-center"
+>
+<Icon name="Check" size={28} />
+</button>
 </div>
 );
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /**
 * BLOCK 4: MÀN HÌNH (VIEWS)
