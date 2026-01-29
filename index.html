@@ -95,9 +95,8 @@ active ? `bg-${color}-100 text-${color}-600 shadow-inner ring-2 ring-${color}-20
 );
 /**
 * BLOCK 3: KHỐI (BLOCKS)
-* Version: ver1.7
-* Cập nhật: Dùng khung bao (Wrapper) justify-end và set cứng chiều cao lưới h-[70%] trên mobile
-* để đảm bảo bàn phím thấp hơn 30% và luôn nằm sát nút Kết thúc.
+* Version: ver1.8
+* Cập nhật: Đổi KeypadBlock sang h-auto và nút bấm cố định h-12 trên mobile để gọn gàng hơn.
 */
 const TableSelector = ({ current, onSelect }) => (
 <div className="flex justify-center items-center gap-1.5 overflow-x-auto no-scrollbar py-2 px-4 bg-white/50 border-b border-gray-100">
@@ -145,46 +144,47 @@ className={`bg-white rounded-[2rem] shadow-lg border border-gray-100 flex flex-c
 );
 
 const KeypadBlock = ({ onNumber, onDelete, onSubmit, style }) => (
-// Wrapper để đẩy toàn bộ bàn phím xuống dưới (justify-end) và chiếm full chiều cao container cha
-<div className="w-full h-full flex flex-col justify-end md:justify-center">
-{/* Grid bàn phím chỉ chiếm 70% chiều cao trên mobile */}
-<div className="grid grid-cols-3 gap-1 w-full h-[70%] md:h-full">
+// Wrapper để căn giữa (thay vì justify-end) và chiếm full chiều cao container cha
+<div className="w-full h-full flex flex-col justify-center md:justify-center">
+{/* Grid bàn phím tự động co giãn chiều cao (h-auto) */}
+<div className="grid grid-cols-3 gap-2 w-full h-auto md:h-full">
 {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
 <button
 key={n}
 onClick={() => onNumber(n.toString())}
 style={{...style.keypadText}}
-className="bg-white hover:bg-blue-50 text-blue-600 font-black rounded-xl border-b-4 border-gray-100 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all h-full min-h-[20px] flex items-center justify-center shadow-sm"
+className="bg-white hover:bg-blue-50 text-blue-600 font-black rounded-xl border-b-4 border-gray-100 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all h-12 md:h-full flex items-center justify-center shadow-sm"
 >
 {n}
 </button>
 ))}
 <button
 onClick={onDelete}
-className="bg-red-50 hover:bg-red-100 text-red-400 rounded-xl border-b-4 border-red-100 active:border-b-0 active:translate-y-1 transition-all h-full min-h-[30px] flex items-center justify-center shadow-sm"
+className="bg-red-50 hover:bg-red-100 text-red-400 rounded-xl border-b-4 border-red-100 active:border-b-0 active:translate-y-1 transition-all h-12 md:h-full flex items-center justify-center shadow-sm"
 >
 <Icon name="Delete" size={24} />
 </button>
 <button
 onClick={() => onNumber('0')}
 style={style.keypadText}
-className="bg-white hover:bg-blue-50 text-blue-600 font-black rounded-xl border-b-4 border-gray-100 active:border-b-0 active:translate-y-1 transition-all h-full min-h-[30px] flex items-center justify-center shadow-sm"
+className="bg-white hover:bg-blue-50 text-blue-600 font-black rounded-xl border-b-4 border-gray-100 active:border-b-0 active:translate-y-1 transition-all h-12 md:h-full flex items-center justify-center shadow-sm"
 >
 0
 </button>
 <button
 onClick={onSubmit}
-className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl border-b-4 border-blue-800 active:border-b-0 active:translate-y-1 transition-all shadow-lg h-full min-h-[30px] flex items-center justify-center"
+className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl border-b-4 border-blue-800 active:border-b-0 active:translate-y-1 transition-all shadow-lg h-12 md:h-full flex items-center justify-center"
 >
 <Icon name="Check" size={28} />
 </button>
 </div>
 </div>
 );
+
 /**
 * BLOCK 4: MÀN HÌNH (VIEWS)
-* Version: ver1.3
-* Cập nhật: Chỉnh justify-start cho khung điều khiển chế độ Học bài để dính sát Flashcard trên mobile.
+* Version: ver1.4
+* Cập nhật: Bỏ flex-1 ở container bàn phím trong StudyScreenView để các phần tử (Điểm, Phím, Nút thoát) nằm sát nhau.
 */
 
 const MenuScreenView = ({ onStartStudy, onStartCheck, onStartQuiz, onOpenSettings, onOpenNotebook, notebookCount }) => (
@@ -372,7 +372,6 @@ className="relative px-2 py-1.5 bg-white border border-yellow-100 shadow-sm roun
 <div className="flex-1 overflow-y-auto p-4 md:p-6 no-scrollbar bg-[#F8FAFC] flex flex-col items-center justify-start pt-2 md:justify-center md:pt-0 relative">
 <div style={{ gap: style.containerGap }} className="flex flex-col md:flex-row items-center md:items-stretch justify-center w-full transition-all duration-500">
 <FlashCardBlock table={table === 'all' ? Math.floor(Math.random()*8)+2 : table} factor={factor} isInputMode={isInputMode} userAnswer={userAnswer} checkStatus={checkStatus} isPlaying={isPlaying} style={style} />
-{/* --- VỊ TRÍ CẬP NHẬT: Thêm !h-auto md:!h-full --- */}
 <div style={style.card} className="flex flex-col transition-all duration-500 !h-auto md:!h-full">
 {isInputMode ? (
 <div className="bg-white p-5 md:p-6 rounded-[2rem] shadow-lg border border-gray-100 flex flex-col gap-3 h-full justify-center w-full relative overflow-y-auto no-scrollbar">
@@ -404,7 +403,8 @@ className="relative px-2 py-1.5 bg-white border border-yellow-100 shadow-sm roun
 <div className="flex items-center gap-2"><Icon name="ThumbsDown" size={18} className="text-red-400" /><span className="text-lg font-black text-red-400">{stats.incorrect}</span></div>
 </div>
 
-<div className="flex-1 min-h-0">
+{/* --- VỊ TRÍ CẬP NHẬT: Xóa flex-1, dùng w-full --- */}
+<div className="w-full">
 <KeypadBlock onNumber={onNumberInput} onDelete={onDeleteInput} onSubmit={onSubmitInput} style={style} />
 </div>
 
