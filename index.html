@@ -505,7 +505,7 @@ inputWidth: { minWidth: `${finalW * 0.4}px` },
 feedbackText: { fontSize: `${Math.max(10, minDim * 0.04)}px` },
 keypadText: { fontSize: `${30 * s}px` },
 keypadBtnPadding: { padding: `${12 * s}px 0` },
-containerGap: `${8 * s}px` // CHANGED HERE: 24 -> 8
+containerGap: `${3 * s}px` // CHANGED HERE: 24 -> 8
 };
 }, [scale, ratioMode]);
 return { scale, setScale, appSizeId, setAppSizeId, ratioMode, setRatioMode, appFrameClass, dynStyle };
@@ -853,4 +853,5 @@ root.render(<App />);
 </script>
 </body>
 </html>
+
 
