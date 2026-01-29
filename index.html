@@ -180,8 +180,8 @@ className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl border-b-4 border
 
 /**
 * BLOCK 4: MÀN HÌNH (VIEWS)
-* Version: ver1.2
-* Cập nhật: Thêm !h-auto cho khung điều khiển trong StudyScreenView để loại bỏ khoảng trắng thừa trên mobile.
+* Version: ver1.3
+* Cập nhật: Chỉnh justify-start cho khung điều khiển chế độ Học bài để dính sát Flashcard trên mobile.
 */
 
 const MenuScreenView = ({ onStartStudy, onStartCheck, onStartQuiz, onOpenSettings, onOpenNotebook, notebookCount }) => (
@@ -412,7 +412,7 @@ className="relative px-2 py-1.5 bg-white border border-yellow-100 shadow-sm roun
 )}
 </div>
 ) : (
-<div className="flex flex-col justify-center h-full w-full gap-3 md:gap-6 animate-in fade-in">
+<div className="flex flex-col justify-start md:justify-center h-full w-full gap-3 md:gap-6 animate-in fade-in">
 <div className="flex items-center justify-between px-2 md:px-6 bg-white py-3 rounded-[2rem] shadow-sm border border-gray-100 w-full">
 <CircleButton iconName={isRandom ? "Shuffle" : "SortNumeric"} onClick={onToggleRandom} color="purple" label={isRandom ? "Ngẫu nhiên" : "Tuần tự"} />
 <div className="w-px h-8 bg-gray-100"></div>
