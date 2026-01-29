@@ -607,8 +607,8 @@ return { mistakes, addMistake, clearNotebook };
 
 /**
 * BLOCK 6: ĐIỀU KHIỂN (CONTROLLER / APP)
-* Version: ver1.4
-* Cập nhật: Sửa lỗi màn hình trắng khi vào Trắc nghiệm (gọi generateQuizQuestion khi khởi tạo).
+* Version: ver1.5
+* Cập nhật: Tăng số câu trắc nghiệm lên 30. Khi làm xong tự động hiện bảng kết quả.
 */
 const App = () => {
 const [screen, setScreen] = useState('menu');
@@ -686,8 +686,14 @@ setQuizFeedback('incorrect');
 notebook.addMistake(quizQuestion.num1, quizQuestion.num2);
 }
 setTimeout(() => {
-if(quizCount + 1 >= 10) setScreen('menu');
-else { setQuizCount(c => c + 1); setQuizFeedback(null); generateQuizQuestion(); }
+// --- CẬP NHẬT: Kết thúc sau 30 câu và hiện bảng kết quả ---
+if(quizCount + 1 >= 30) {
+handleQuizEnd();
+} else {
+setQuizCount(c => c + 1);
+setQuizFeedback(null);
+generateQuizQuestion();
+}
 }, 1500);
 };
 
@@ -850,7 +856,8 @@ selectedTable={selectedTable}
 
 {screen === 'quiz' && (
 <QuizScreenView
-score={quizScore} count={quizCount} TOTAL={10} question={quizQuestion} feedback={quizFeedback}
+// --- CẬP NHẬT: TOTAL=30 ---
+score={quizScore} count={quizCount} TOTAL={30} question={quizQuestion} feedback={quizFeedback}
 onAnswer={handleQuizAnswer}
 goHome={() => {
 setScreen('menu');
