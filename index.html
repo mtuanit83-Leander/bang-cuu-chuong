@@ -95,7 +95,8 @@ active ? `bg-${color}-100 text-${color}-600 shadow-inner ring-2 ring-${color}-20
 );
 /**
 * BLOCK 3: KHỐI (BLOCKS)
-* Cập nhật: Thêm margin âm (-mt-4) cho dòng kết quả để gom sát với phép tính.
+* Version: ver1.3
+* Cập nhật: Tăng khoảng cách (gap-2) và bỏ margin âm trong FlashCardBlock để nội dung thoáng hơn.
 */
 const TableSelector = ({ current, onSelect }) => (
 <div className="flex justify-center items-center gap-1.5 overflow-x-auto no-scrollbar py-2 px-4 bg-white/50 border-b border-gray-100">
@@ -109,8 +110,9 @@ const TableSelector = ({ current, onSelect }) => (
 const FlashCardBlock = ({ table, factor, isInputMode, userAnswer, checkStatus, isPlaying, style }) => (
 <div
 style={style.card}
-className={`bg-white rounded-[2rem] shadow-lg border border-gray-100 flex flex-col items-center justify-start pt-10 md:justify-center md:pt-0 sync-scale relative overflow-hidden max-h-[35vh] md:max-h-none ${isPlaying ? 'ring-4 ring-green-50 scale-[1.02]' : ''}`}
+className={`bg-white rounded-[2rem] shadow-lg border border-gray-100 flex flex-col items-center justify-start pt-10 md:justify-center md:pt-0 sync-scale relative overflow-hidden max-h-[35vh] md:max-h-none !h-auto md:!h-full ${isPlaying ? 'ring-4 ring-green-50 scale-[1.02]' : ''}`}
 >
+{/* --- VỊ TRÍ CẬP NHẬT: Tăng gap-0 lên gap-2 --- */}
 <div className="flex flex-col items-center justify-center gap-2 w-full py-2 scale-75 md:scale-100 origin-top">
 {/* Hàng 1: Phép tính */}
 <div className="flex items-center justify-center">
@@ -118,9 +120,9 @@ className={`bg-white rounded-[2rem] shadow-lg border border-gray-100 flex flex-c
 <span style={style.operator} className="text-gray-200 font-light mx-2 md:mx-4">×</span>
 <span style={style.number} className="font-black text-blue-600 leading-none">{factor}</span>
 </div>
-<div className="w-16 md:w-24 h-1 bg-gray-100 rounded-full"></div>
-{/* Hàng 2: Kết quả / Ô nhập - Thêm margin âm để kéo lên */}
-<div className="flex items-center justify-center relative -mt-4 md:-mt-6">
+
+{/* Hàng 2: Kết quả / Ô nhập - Bỏ margin âm */}
+<div className="flex items-center justify-center relative">
 <span style={style.operator} className="text-gray-200 font-light mr-2 md:mr-4">=</span>
 {isInputMode ? (
 <div style={{...style.number, ...style.inputWidth}} className={`font-black text-center border-b-2 md:border-b-4 border-dashed leading-none ${checkStatus === 'correct' ? 'text-green-500 border-green-500' : checkStatus === 'incorrect' ? 'text-red-500 border-red-500' : 'text-blue-600 border-blue-100'}`}>
@@ -174,8 +176,6 @@ className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl border-b-4 border
 </button>
 </div>
 );
-
-
 
 
 /**
