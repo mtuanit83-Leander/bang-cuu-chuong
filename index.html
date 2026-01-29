@@ -148,13 +148,13 @@ const KeypadBlock = ({ onNumber, onDelete, onSubmit, style }) => (
 // Wrapper để đẩy toàn bộ bàn phím xuống dưới (justify-end) và chiếm full chiều cao container cha
 <div className="w-full h-full flex flex-col justify-end md:justify-center">
 {/* Grid bàn phím chỉ chiếm 70% chiều cao trên mobile */}
-<div className="grid grid-cols-3 gap-2 w-full h-[70%] md:h-full">
+<div className="grid grid-cols-3 gap-1 w-full h-[70%] md:h-full">
 {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
 <button
 key={n}
 onClick={() => onNumber(n.toString())}
 style={{...style.keypadText}}
-className="bg-white hover:bg-blue-50 text-blue-600 font-black rounded-xl border-b-4 border-gray-100 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all h-full min-h-[30px] flex items-center justify-center shadow-sm"
+className="bg-white hover:bg-blue-50 text-blue-600 font-black rounded-xl border-b-4 border-gray-100 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all h-full min-h-[20px] flex items-center justify-center shadow-sm"
 >
 {n}
 </button>
