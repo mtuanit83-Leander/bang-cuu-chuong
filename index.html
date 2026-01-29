@@ -180,12 +180,11 @@ className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl border-b-4 border
 
 /**
 * BLOCK 4: MÀN HÌNH (VIEWS)
-* Version: ver1.0
-* Cập nhật: Thay đổi căn chỉnh (Alignment) của StudyScreenView sang Top trên mobile để tối ưu không gian.
+* Version: ver1.2
+* Cập nhật: Thêm !h-auto cho khung điều khiển trong StudyScreenView để loại bỏ khoảng trắng thừa trên mobile.
 */
 
 const MenuScreenView = ({ onStartStudy, onStartCheck, onStartQuiz, onOpenSettings, onOpenNotebook, notebookCount }) => (
-// --- FIX: Thêm wrapper h-full overflow-y-auto để kích hoạt cuộn ---
 <div className="h-full w-full overflow-y-auto no-scrollbar relative">
 <div className="min-h-full flex flex-col items-center justify-center space-y-8 p-6">
 {/* Nút truy cập nhanh Sổ tay & Cài đặt */}
@@ -367,11 +366,11 @@ className="relative px-2 py-1.5 bg-white border border-yellow-100 shadow-sm roun
 
 {!isReviewMode && <TableSelector current={table} onSelect={onSelectTable} />}
 
-{/* --- VỊ TRÍ CẬP NHẬT: Thay đổi justify-center thành justify-start pt-2 ... --- */}
 <div className="flex-1 overflow-y-auto p-4 md:p-6 no-scrollbar bg-[#F8FAFC] flex flex-col items-center justify-start pt-2 md:justify-center md:pt-0 relative">
 <div style={{ gap: style.containerGap }} className="flex flex-col md:flex-row items-center md:items-stretch justify-center w-full transition-all duration-500">
 <FlashCardBlock table={table === 'all' ? Math.floor(Math.random()*8)+2 : table} factor={factor} isInputMode={isInputMode} userAnswer={userAnswer} checkStatus={checkStatus} isPlaying={isPlaying} style={style} />
-<div style={style.card} className="flex flex-col transition-all duration-500">
+{/* --- VỊ TRÍ CẬP NHẬT: Thêm !h-auto md:!h-full --- */}
+<div style={style.card} className="flex flex-col transition-all duration-500 !h-auto md:!h-full">
 {isInputMode ? (
 <div className="bg-white p-5 md:p-6 rounded-[2rem] shadow-lg border border-gray-100 flex flex-col gap-3 h-full justify-center w-full relative overflow-y-auto no-scrollbar">
 {!isCheckSessionActive ? (
@@ -473,6 +472,7 @@ return (
 </div>
 );
 };
+
 /**
 * BLOCK 5: LOGIC (CUSTOM HOOKS)
 * Version: ver1.0
@@ -505,7 +505,7 @@ inputWidth: { minWidth: `${finalW * 0.4}px` },
 feedbackText: { fontSize: `${Math.max(10, minDim * 0.04)}px` },
 keypadText: { fontSize: `${30 * s}px` },
 keypadBtnPadding: { padding: `${12 * s}px 0` },
-containerGap: `${4 * s}px` // CHANGED HERE: 24 -> 8
+containerGap: `${8 * s}px` // CHANGED HERE: 24 -> 8
 };
 }, [scale, ratioMode]);
 return { scale, setScale, appSizeId, setAppSizeId, ratioMode, setRatioMode, appFrameClass, dynStyle };
