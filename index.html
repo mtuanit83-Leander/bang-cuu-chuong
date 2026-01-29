@@ -111,7 +111,7 @@ const FlashCardBlock = ({ table, factor, isInputMode, userAnswer, checkStatus, i
 style={style.card}
 className={`bg-white rounded-[2rem] shadow-lg border border-gray-100 flex flex-col items-center justify-start pt-10 md:justify-center md:pt-0 sync-scale relative overflow-hidden max-h-[35vh] md:max-h-none ${isPlaying ? 'ring-4 ring-green-50 scale-[1.02]' : ''}`}
 >
-<div className="flex flex-col items-center justify-center gap-2 w-full py-2 scale-75 md:scale-100 origin-top">
+<div className="flex flex-col items-center justify-center gap-0 w-full py-2 scale-75 md:scale-100 origin-top">
 {/* Hàng 1: Phép tính */}
 <div className="flex items-center justify-center">
 <span style={style.number} className="font-black text-gray-800 leading-none">{table}</span>
@@ -180,7 +180,8 @@ className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl border-b-4 border
 
 /**
 * BLOCK 4: MÀN HÌNH (VIEWS)
-* Cập nhật: Khôi phục container cuộn (overflow-y-auto) cho MenuScreenView để sửa lỗi mất hiệu ứng cuộn.
+* Version: ver1.0
+* Cập nhật: Thay đổi căn chỉnh (Alignment) của StudyScreenView sang Top trên mobile để tối ưu không gian.
 */
 
 const MenuScreenView = ({ onStartStudy, onStartCheck, onStartQuiz, onOpenSettings, onOpenNotebook, notebookCount }) => (
@@ -366,6 +367,7 @@ className="relative px-2 py-1.5 bg-white border border-yellow-100 shadow-sm roun
 
 {!isReviewMode && <TableSelector current={table} onSelect={onSelectTable} />}
 
+{/* --- VỊ TRÍ CẬP NHẬT: Thay đổi justify-center thành justify-start pt-2 ... --- */}
 <div className="flex-1 overflow-y-auto p-4 md:p-6 no-scrollbar bg-[#F8FAFC] flex flex-col items-center justify-start pt-2 md:justify-center md:pt-0 relative">
 <div style={{ gap: style.containerGap }} className="flex flex-col md:flex-row items-center md:items-stretch justify-center w-full transition-all duration-500">
 <FlashCardBlock table={table === 'all' ? Math.floor(Math.random()*8)+2 : table} factor={factor} isInputMode={isInputMode} userAnswer={userAnswer} checkStatus={checkStatus} isPlaying={isPlaying} style={style} />
@@ -471,8 +473,6 @@ return (
 </div>
 );
 };
-
-
 /**
 * BLOCK 5: LOGIC (CUSTOM HOOKS)
 * Version: ver1.0
@@ -505,7 +505,7 @@ inputWidth: { minWidth: `${finalW * 0.4}px` },
 feedbackText: { fontSize: `${Math.max(10, minDim * 0.04)}px` },
 keypadText: { fontSize: `${30 * s}px` },
 keypadBtnPadding: { padding: `${12 * s}px 0` },
-containerGap: `${1 * s}px` // CHANGED HERE: 24 -> 8
+containerGap: `${4 * s}px` // CHANGED HERE: 24 -> 8
 };
 }, [scale, ratioMode]);
 return { scale, setScale, appSizeId, setAppSizeId, ratioMode, setRatioMode, appFrameClass, dynStyle };
@@ -853,6 +853,3 @@ root.render(<App />);
 </script>
 </body>
 </html>
-
-
-
