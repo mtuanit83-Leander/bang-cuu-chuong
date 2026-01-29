@@ -183,8 +183,8 @@ className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl border-b-4 border
 
 /**
 * BLOCK 4: MÀN HÌNH (VIEWS)
-* Version: ver1.4
-* Cập nhật: Bỏ flex-1 ở container bàn phím trong StudyScreenView để các phần tử (Điểm, Phím, Nút thoát) nằm sát nhau.
+* Version: ver1.5
+* Cập nhật: StudyScreenView nhận prop selectedTable để hiển thị đúng trạng thái trên TableSelector.
 */
 
 const MenuScreenView = ({ onStartStudy, onStartCheck, onStartQuiz, onOpenSettings, onOpenNotebook, notebookCount }) => (
@@ -336,7 +336,9 @@ onBack, onOpenSettings, onSelectTable, onToggleRandom, onRefresh, onTogglePlay, 
 onNumberInput, onDeleteInput, onSubmitInput, onToggleTimeLimit, onTimeLimitChange, style,
 onOpenNotebook, notebookCount,
 isCheckSessionActive, onSessionStart, onSessionEnd,
-isReviewMode
+isReviewMode,
+// --- VỊ TRÍ CẬP NHẬT: Thêm prop selectedTable ---
+selectedTable
 }) => (
 <div className="flex flex-col h-full overflow-hidden animate-in fade-in duration-500">
 <div className="pt-3 pb-2 px-4 bg-white/80 backdrop-blur-sm z-10 border-b border-gray-100 flex items-center justify-between shadow-sm">
@@ -367,7 +369,8 @@ className="relative px-2 py-1.5 bg-white border border-yellow-100 shadow-sm roun
 </div>
 </div>
 
-{!isReviewMode && <TableSelector current={table} onSelect={onSelectTable} />}
+{/* --- VỊ TRÍ CẬP NHẬT: Dùng selectedTable thay vì table --- */}
+{!isReviewMode && <TableSelector current={selectedTable} onSelect={onSelectTable} />}
 
 <div className="flex-1 overflow-y-auto p-4 md:p-6 no-scrollbar bg-[#F8FAFC] flex flex-col items-center justify-start pt-2 md:justify-center md:pt-0 relative">
 <div style={{ gap: style.containerGap }} className="flex flex-col md:flex-row items-center md:items-stretch justify-center w-full transition-all duration-500">
@@ -403,7 +406,6 @@ className="relative px-2 py-1.5 bg-white border border-yellow-100 shadow-sm roun
 <div className="flex items-center gap-2"><Icon name="ThumbsDown" size={18} className="text-red-400" /><span className="text-lg font-black text-red-400">{stats.incorrect}</span></div>
 </div>
 
-{/* --- VỊ TRÍ CẬP NHẬT: Xóa flex-1, dùng w-full --- */}
 <div className="w-full">
 <KeypadBlock onNumber={onNumberInput} onDelete={onDeleteInput} onSubmit={onSubmitInput} style={style} />
 </div>
@@ -475,7 +477,6 @@ return (
 </div>
 );
 };
-
 /**
 * BLOCK 5: LOGIC (CUSTOM HOOKS)
 * Version: ver1.0
@@ -589,7 +590,8 @@ return { mistakes, addMistake, clearNotebook };
 
 /**
 * BLOCK 6: ĐIỀU KHIỂN (CONTROLLER / APP)
-* Cập nhật: Sửa lỗi logic tính sai trong chế độ Tổng hợp (đồng bộ table hiển thị và logic).
+* Version: ver1.1
+* Cập nhật: Truyền prop selectedTable cho StudyScreenView để đồng bộ thanh chọn bảng.
 */
 const App = () => {
 const [screen, setScreen] = useState('menu');
@@ -765,7 +767,6 @@ notebookCount={notebook.mistakes.length}
 
 {screen === 'study' && (
 <StudyScreenView
-// --- SỬA LỖI TẠI ĐÂY: Truyền math.currentDisplayTable thay vì selectedTable ---
 table={math.currentDisplayTable}
 factor={math.studyFactor} isInputMode={isInputMode} isRandom={isRandomMode} isPlaying={isPlaying}
 userAnswer={userAnswer} checkStatus={checkStatus} stats={stats} timeLimitValue={timeLimitValue} isTimeLimitEnabled={isTimeLimitEnabled}
@@ -804,6 +805,8 @@ isCheckSessionActive={isCheckSessionActive}
 onSessionStart={handleSessionStart}
 onSessionEnd={handleSessionEnd}
 isReviewMode={math.isReviewing}
+// --- VỊ TRÍ CẬP NHẬT: Thêm prop selectedTable ---
+selectedTable={selectedTable}
 />
 )}
 
@@ -846,8 +849,6 @@ onReviewQuiz={handleReviewQuiz}
 </div>
 );
 };
-
-
 /**
 * PHẦN KẾT THÚC (END)
 */
