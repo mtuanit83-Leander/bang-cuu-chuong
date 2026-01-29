@@ -95,8 +95,8 @@ active ? `bg-${color}-100 text-${color}-600 shadow-inner ring-2 ring-${color}-20
 );
 /**
 * BLOCK 3: KHỐI (BLOCKS)
-* Version: ver1.4
-* Cập nhật: Giảm chiều cao tối thiểu nút bấm (min-h-[30px]) để giao diện nhỏ gọn hơn.
+* Version: ver1.5
+* Cập nhật: Giảm chiều cao khung bàn phím xuống 70% trên mobile (h-[70%]) để nút bấm thấp hơn 30%.
 */
 const TableSelector = ({ current, onSelect }) => (
 <div className="flex justify-center items-center gap-1.5 overflow-x-auto no-scrollbar py-2 px-4 bg-white/50 border-b border-gray-100">
@@ -123,7 +123,7 @@ className={`bg-white rounded-[2rem] shadow-lg border border-gray-100 flex flex-c
 
 {/* Hàng 2: Kết quả / Ô nhập - Bỏ margin âm */}
 <div className="flex items-center justify-center relative">
-<span style={style.operator} className="text-gray-200 font-light mr-2 md:mr-4">=</span>
+<div className="flex items-center justify-center relative">
 {isInputMode ? (
 <div style={{...style.number, ...style.inputWidth}} className={`font-black text-center border-b-2 md:border-b-4 border-dashed leading-none ${checkStatus === 'correct' ? 'text-green-500 border-green-500' : checkStatus === 'incorrect' ? 'text-red-500 border-red-500' : 'text-blue-600 border-blue-100'}`}>
 {userAnswer || '?'}
@@ -144,7 +144,7 @@ className={`bg-white rounded-[2rem] shadow-lg border border-gray-100 flex flex-c
 );
 
 const KeypadBlock = ({ onNumber, onDelete, onSubmit, style }) => (
-<div className="grid grid-cols-3 gap-2 w-full h-full content-center">
+<div className="grid grid-cols-3 gap-2 w-full h-[70%] md:h-full content-center">
 {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
 <button
 key={n}
