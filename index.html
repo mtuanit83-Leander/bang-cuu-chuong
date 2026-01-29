@@ -95,8 +95,8 @@ active ? `bg-${color}-100 text-${color}-600 shadow-inner ring-2 ring-${color}-20
 );
 /**
 * BLOCK 3: KHỐI (BLOCKS)
-* Version: ver1.3
-* Cập nhật: Tăng khoảng cách (gap-2) và bỏ margin âm trong FlashCardBlock để nội dung thoáng hơn.
+* Version: ver1.4
+* Cập nhật: Giảm chiều cao tối thiểu nút bấm (min-h-[30px]) để giao diện nhỏ gọn hơn.
 */
 const TableSelector = ({ current, onSelect }) => (
 <div className="flex justify-center items-center gap-1.5 overflow-x-auto no-scrollbar py-2 px-4 bg-white/50 border-b border-gray-100">
@@ -113,7 +113,7 @@ style={style.card}
 className={`bg-white rounded-[2rem] shadow-lg border border-gray-100 flex flex-col items-center justify-start pt-10 md:justify-center md:pt-0 sync-scale relative overflow-hidden max-h-[35vh] md:max-h-none !h-auto md:!h-full ${isPlaying ? 'ring-4 ring-green-50 scale-[1.02]' : ''}`}
 >
 {/* --- VỊ TRÍ CẬP NHẬT: Tăng gap-0 lên gap-2 --- */}
-<div className="flex flex-col items-center justify-center gap-4 w-full py-2 scale-75 md:scale-100 origin-top">
+<div className="flex flex-col items-center justify-center gap-2 w-full py-2 scale-75 md:scale-100 origin-top">
 {/* Hàng 1: Phép tính */}
 <div className="flex items-center justify-center">
 <span style={style.number} className="font-black text-gray-800 leading-none">{table}</span>
@@ -150,27 +150,27 @@ const KeypadBlock = ({ onNumber, onDelete, onSubmit, style }) => (
 key={n}
 onClick={() => onNumber(n.toString())}
 style={{...style.keypadText}}
-className="bg-white hover:bg-blue-50 text-blue-600 font-black rounded-xl border-b-4 border-gray-100 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all h-full min-h-[50px] flex items-center justify-center shadow-sm"
+className="bg-white hover:bg-blue-50 text-blue-600 font-black rounded-xl border-b-4 border-gray-100 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all h-full min-h-[30px] flex items-center justify-center shadow-sm"
 >
 {n}
 </button>
 ))}
 <button
 onClick={onDelete}
-className="bg-red-50 hover:bg-red-100 text-red-400 rounded-xl border-b-4 border-red-100 active:border-b-0 active:translate-y-1 transition-all h-full min-h-[50px] flex items-center justify-center shadow-sm"
+className="bg-red-50 hover:bg-red-100 text-red-400 rounded-xl border-b-4 border-red-100 active:border-b-0 active:translate-y-1 transition-all h-full min-h-[30px] flex items-center justify-center shadow-sm"
 >
 <Icon name="Delete" size={24} />
 </button>
 <button
 onClick={() => onNumber('0')}
 style={style.keypadText}
-className="bg-white hover:bg-blue-50 text-blue-600 font-black rounded-xl border-b-4 border-gray-100 active:border-b-0 active:translate-y-1 transition-all h-full min-h-[50px] flex items-center justify-center shadow-sm"
+className="bg-white hover:bg-blue-50 text-blue-600 font-black rounded-xl border-b-4 border-gray-100 active:border-b-0 active:translate-y-1 transition-all h-full min-h-[30px] flex items-center justify-center shadow-sm"
 >
 0
 </button>
 <button
 onClick={onSubmit}
-className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl border-b-4 border-blue-800 active:border-b-0 active:translate-y-1 transition-all shadow-lg h-full min-h-[50px] flex items-center justify-center"
+className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl border-b-4 border-blue-800 active:border-b-0 active:translate-y-1 transition-all shadow-lg h-full min-h-[30px] flex items-center justify-center"
 >
 <Icon name="Check" size={28} />
 </button>
@@ -853,4 +853,3 @@ root.render(<App />);
 </script>
 </body>
 </html>
-
