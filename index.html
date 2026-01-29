@@ -607,8 +607,8 @@ return { mistakes, addMistake, clearNotebook };
 
 /**
 * BLOCK 6: ĐIỀU KHIỂN (CONTROLLER / APP)
-* Version: ver1.3
-* Cập nhật: Thêm logic Bắt đầu (Start) cho chế độ Trắc nghiệm (Quiz).
+* Version: ver1.4
+* Cập nhật: Sửa lỗi màn hình trắng khi vào Trắc nghiệm (gọi generateQuizQuestion khi khởi tạo).
 */
 const App = () => {
 const [screen, setScreen] = useState('menu');
@@ -744,6 +744,7 @@ setIsQuizReviewMode(true);
 setQuizScore(0);
 setQuizCount(0);
 setIsQuizSessionActive(false); // Hiện màn hình chờ
+generateQuizQuestion(true); // FIX: Tạo câu hỏi khởi tạo để tránh màn hình trắng
 setScreen('quiz');
 };
 
@@ -793,6 +794,7 @@ setIsQuizReviewMode(false);
 setQuizScore(0);
 setQuizCount(0);
 setIsQuizSessionActive(false); // Hiện màn hình chờ
+generateQuizQuestion(false); // FIX: Tạo câu hỏi khởi tạo để tránh màn hình trắng
 setScreen('quiz');
 }}
 onOpenSettings={() => setIsSettingsOpen(true)}
