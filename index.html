@@ -786,8 +786,8 @@ return { mistakes, addMistake, clearNotebook };
 };
 /**
 * BLOCK 6: ĐIỀU KHIỂN (CONTROLLER / APP)
-* Version: ver1.7
-* Cập nhật: Kết nối logic tính toán (calculateResult) và ký hiệu phép tính (operatorSymbol) cho các phép +, -, x, :.
+* Version: ver1.10
+* Cập nhật: Ép buộc chế độ Ngẫu nhiên (Random) khi ở trong chế độ Kiểm tra hoặc Trắc nghiệm.
 */
 const App = () => {
 const [screen, setScreen] = useState('menu');
@@ -805,7 +805,7 @@ const [subtractionLimit, setSubtractionLimit] = useState(20);
 const scaleSudo = useScaling();
 
 const [selectedTable, setSelectedTable] = useState(2);
-const [isRandomMode, setIsRandomMode] = useState(false);
+const [isRandomMode, setIsRandomMode] = useState(false); // Mặc định là Tuần tự cho chế độ Học
 
 const [isPlaying, setIsPlaying] = useState(false);
 const [isInputMode, setIsInputMode] = useState(false);
@@ -820,8 +820,11 @@ const [quizCount, setQuizCount] = useState(0);
 const [quizQuestion, setQuizQuestion] = useState(null);
 const [quizFeedback, setQuizFeedback] = useState(null);
 
+// --- FIX: Tự động bật Ngẫu nhiên khi Kiểm tra (InputMode) hoặc Trắc nghiệm (Quiz) ---
+const effectiveRandomMode = (isInputMode || screen === 'quiz') ? true : isRandomMode;
+
 // Khởi tạo logic toán học từ custom hook (Block 5)
-const math = useMathLogic(selectedTable, isRandomMode, operation, subtractionLimit);
+const math = useMathLogic(selectedTable, effectiveRandomMode, operation, subtractionLimit);
 
 // Khởi tạo logic sổ tay (Block 5)
 const notebook = useNotebook();
@@ -847,7 +850,7 @@ n1 = selectedTable;
 n2 = Math.floor(Math.random() * 10) + 1;
 }
 
-// --- VỊ TRÍ CẬP NHẬT: Dùng calculateResult thay vì nhân cứng ---
+// Dùng calculateResult thay vì nhân cứng
 const correct = math.calculateResult(n1, n2);
 
 let ans = [correct];
@@ -857,7 +860,7 @@ let w = Math.random() > 0.5 ? correct + Math.floor(Math.random()*5)+1 : Math.max
 if(!ans.includes(w) && w >= 0) ans.push(w);
 }
 setQuizQuestion({ num1: n1, num2: n2, correctAnswer: correct, answers: ans.sort(() => Math.random() - 0.5) });
-}, [isQuizReviewMode, notebook.mistakes, selectedTable, math]); // Thêm math vào dependency
+}, [isQuizReviewMode, notebook.mistakes, selectedTable, math]);
 
 const handleQuizAnswer = (val) => {
 if(quizFeedback) return;
@@ -939,7 +942,7 @@ useEffect(() => {
 if (screen === 'study' && !math.isReviewing) {
 math.nextStudyStep();
 }
-}, [selectedTable, operation]); // Thêm operation để đổi số khi đổi phép tính
+}, [selectedTable, operation]);
 
 useEffect(() => {
 let itv;
@@ -1003,9 +1006,11 @@ onBack={() => {
 setScreen('menu');
 setIsPlaying(false);
 setIsCheckSessionActive(false);
+
 if (math.isReviewing) {
 setIsNotebookOpen(true);
 }
+
 math.endReview();
 }}
 onOpenSettings={() => setIsSettingsOpen(true)}
@@ -1015,7 +1020,6 @@ onEnterInputMode={(v) => {setIsInputMode(v); setIsPlaying(false); setStats({corr
 onNumberInput={(n) => setUserAnswer(p => p.length < 3 ? p + n : p)} onDeleteInput={() => setUserAnswer(p => p.slice(0, -1))}
 onSubmitInput={() => {
 if(!userAnswer || checkStatus) return;
-// --- VỊ TRÍ CẬP NHẬT: Dùng calculateResult ---
 if(parseInt(userAnswer) === math.calculateResult(math.currentDisplayTable, math.studyFactor)) {
 setCheckStatus('correct');
 setStats(p => ({...p, correct: p.correct+1}));
@@ -1034,8 +1038,8 @@ onSessionStart={handleSessionStart}
 onSessionEnd={handleSessionEnd}
 isReviewMode={math.isReviewing}
 selectedTable={selectedTable}
-// --- VỊ TRÍ CẬP NHẬT: Truyền ký hiệu phép tính ---
 operatorSymbol={math.getOperatorSymbol()}
+calculateResult={math.calculateResult}
 />
 )}
 
@@ -1058,7 +1062,6 @@ onSelectTable={(t) => setSelectedTable(t)}
 onSessionEnd={handleQuizEnd}
 isQuizSessionActive={isQuizSessionActive}
 onSessionStart={handleQuizStart}
-// --- VỊ TRÍ CẬP NHẬT: Truyền ký hiệu phép tính cho Quiz ---
 operatorSymbol={math.getOperatorSymbol()}
 />
 )}
@@ -1072,6 +1075,8 @@ dynStyle={scaleSudo.dynStyle}
 onReviewStudy={handleReviewStudy}
 onReviewCheck={handleReviewCheck}
 onReviewQuiz={handleReviewQuiz}
+operatorSymbol={math.getOperatorSymbol()}
+calculateResult={math.calculateResult}
 />
 
 <ResultSummaryView isOpen={isResultOpen} onClose={() => setIsResultOpen(false)} stats={stats} />
