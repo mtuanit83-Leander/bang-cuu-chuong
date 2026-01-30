@@ -187,8 +187,8 @@ className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl border-b-4 border
 
 /**
 * BLOCK 4: MÀN HÌNH (VIEWS)
-* Version: ver1.12
-* Cập nhật: Thu nhỏ 50% kích thước các nút chọn chế độ (Menu) trên điện thoại (responsive).
+* Version: ver1.14
+* Cập nhật: Áp dụng calcBySymbol cho StudyScreenView để sửa lỗi hiển thị sai kết quả trong chế độ Học.
 */
 
 const MenuScreenView = ({ onStartStudy, onStartCheck, onStartQuiz, onOpenSettings, onOpenNotebook, notebookCount, operation, setOperation, subtractionLimit, setSubtractionLimit }) => (
@@ -263,7 +263,6 @@ subtractionLimit === limit
 
 <h1 className="text-4xl md:text-7xl font-black text-blue-600 mb-2 leading-tight text-center">Bé Vui Học Toán</h1>
 
-{/* --- VỊ TRÍ CẬP NHẬT: Tối ưu kích thước nút cho mobile --- */}
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-4xl">
 <button onClick={onStartStudy} className="p-4 md:p-8 bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all border border-gray-100 flex flex-col items-center active:scale-95 group">
 <div className="bg-green-50 p-2 md:p-4 rounded-full mb-2 md:mb-4 group-hover:bg-green-100 transition-colors">
@@ -322,7 +321,7 @@ Xác nhận
 );
 };
 
-// Hàm tiện ích tính toán cục bộ dựa trên ký hiệu (Fix lỗi hiển thị sai kết quả)
+// Hàm tiện ích tính toán cục bộ dựa trên ký hiệu
 const calcBySymbol = (t, f, sym) => {
 if (sym === '+') return t + f;
 if (sym === '-') return t - f;
@@ -363,7 +362,6 @@ return (
 <div className="flex items-center gap-4">
 <span className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-black text-xs">{idx + 1}</span>
 <div className="font-black text-xl text-gray-800">
-{/* --- FIX: Dùng calcBySymbol để đảm bảo hiển thị đúng kết quả theo dấu --- */}
 {item.table} <span className="text-orange-400">{operatorSymbol}</span> {item.factor} <span className="text-blue-600">= {calcBySymbol(item.table, item.factor, operatorSymbol)}</span>
 </div>
 </div>
@@ -442,6 +440,7 @@ className="relative px-2 py-1.5 bg-white border border-yellow-100 shadow-sm roun
 
 <div className="flex-1 overflow-y-auto p-4 md:p-6 no-scrollbar bg-[#F8FAFC] flex flex-col items-center justify-start pt-2 md:justify-center md:pt-0 relative">
 <div style={{ gap: style.containerGap }} className="flex flex-col md:flex-row items-center md:items-stretch justify-center w-full transition-all duration-500">
+{/* --- VỊ TRÍ SỬA LỖI: Dùng calcBySymbol để hiển thị kết quả đúng cho Flashcard --- */}
 <FlashCardBlock
 table={table === 'all' ? Math.floor(Math.random()*8)+2 : table}
 factor={factor}
@@ -451,7 +450,7 @@ checkStatus={checkStatus}
 isPlaying={isPlaying}
 style={style}
 operatorSymbol={operatorSymbol}
-correctResult={calculateResult ? calculateResult(table, factor) : (table * factor)}
+correctResult={calculateResult ? calculateResult(table, factor) : calcBySymbol(table, factor, operatorSymbol)}
 />
 <div style={style.card} className="flex flex-col transition-all duration-500 !h-auto md:!h-full">
 {isInputMode ? (
@@ -547,7 +546,6 @@ return (
 <div className="bg-white p-6 rounded-[2rem] shadow-lg w-full max-w-md text-center relative overflow-hidden border border-gray-100 animate-in slide-in-from-right">
 {feedback === 'correct' && <div className="absolute inset-0 bg-green-500/90 flex items-center justify-center z-20"><Icon name="Check" size={80} className="text-white animate-bounce" /></div>}
 {feedback === 'incorrect' && <div className="absolute inset-0 bg-red-500/90 flex flex-col items-center justify-center p-4 z-20"><Icon name="X" size={80} className="text-white" /><p className="text-white font-black mt-2">ĐÁP ÁN: {question.correctAnswer}</p></div>}
-{/* --- VỊ TRÍ CẬP NHẬT 4: Hiển thị operatorSymbol --- */}
 <div style={{ fontSize: `calc(${dynStyle.number.fontSize} * 1.5)` }} className="font-black text-gray-800">{question.num1} <span className="text-orange-500">{operatorSymbol}</span> {question.num2}</div>
 </div>
 <div className="grid grid-cols-2 gap-2 w-full max-w-md mt-4 animate-in slide-in-from-bottom duration-500">{question.answers.map((ans, idx) => (<button key={idx} onClick={() => onAnswer(ans)} disabled={feedback !== null} style={{ fontSize: `calc(${dynStyle.number.fontSize} * 0.5)` }} className={`py-4 rounded-xl font-black border-b-4 ${feedback ? 'bg-gray-50 text-gray-200' : 'bg-white text-blue-600 border-blue-50'}`}>{ans}</button>))}</div>
@@ -573,6 +571,8 @@ return (
 </div>
 );
 };
+
+
 /**
 * BLOCK 5: LOGIC (CUSTOM HOOKS)
 * Version: ver1.7
