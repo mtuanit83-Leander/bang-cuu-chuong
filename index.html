@@ -24,9 +24,8 @@ input[type=range]::-webkit-slider-thumb { height: 24px; width: 24px; border-radi
 const { useState, useEffect, useCallback, useRef, useMemo } = React;
 /**
 * BLOCK 1: TÀI NGUYÊN (RESOURCES)
-* Version: ver1.0
-* Đã sửa lỗi Syntax Error: Bao bọc các thẻ path của icon Notebook bằng React Fragment <>...</>.
-* Bảo toàn 100% các định nghĩa biểu tượng khác.
+* Version: ver1.1
+* Cập nhật: Thêm các biểu tượng phép tính (Plus, Minus, Divide) để hỗ trợ lựa chọn phép tính.
 */
 const ICONS_SVG = {
 BookOpen: <><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></>,
@@ -52,6 +51,10 @@ Crop: <><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/>
 XCircle: <><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></>,
 Notebook: <><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><line x1="12" x2="12" y1="9" y2="13" /><line x1="12" x2="12.01" y1="17" y2="17" /></>,
 Trash: <><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></>,
+// --- VỊ TRÍ THÊM MỚI ---
+Plus: <path d="M12 5v14M5 12h14" />,
+Minus: <path d="M5 12h14" />,
+Divide: <><circle cx="12" cy="6" r="2" /><line x1="5" x2="19" y1="12" y2="12" /><circle cx="12" cy="18" r="2" /></>,
 };
 /**
 * BLOCK 2: NGUYÊN TỬ (ATOMS)
@@ -95,8 +98,8 @@ active ? `bg-${color}-100 text-${color}-600 shadow-inner ring-2 ring-${color}-20
 );
 /**
 * BLOCK 3: KHỐI (BLOCKS)
-* Version: ver1.8
-* Cập nhật: Đổi KeypadBlock sang h-auto và nút bấm cố định h-12 trên mobile để gọn gàng hơn.
+* Version: ver1.10
+* Cập nhật: FlashCardBlock nhận prop correctResult để hiển thị kết quả đúng (thay vì tự nhân table * factor).
 */
 const TableSelector = ({ current, onSelect }) => (
 <div className="flex justify-center items-center gap-1.5 overflow-x-auto no-scrollbar py-2 px-4 bg-white/50 border-b border-gray-100">
@@ -107,17 +110,17 @@ const TableSelector = ({ current, onSelect }) => (
 </div>
 );
 
-const FlashCardBlock = ({ table, factor, isInputMode, userAnswer, checkStatus, isPlaying, style }) => (
+// --- VỊ TRÍ CẬP NHẬT: Thêm prop correctResult ---
+const FlashCardBlock = ({ table, factor, isInputMode, userAnswer, checkStatus, isPlaying, style, operatorSymbol = '×', correctResult }) => (
 <div
 style={style.card}
 className={`bg-white rounded-[2rem] shadow-lg border border-gray-100 flex flex-col items-center justify-start pt-10 md:justify-center md:pt-0 sync-scale relative overflow-hidden max-h-[35vh] md:max-h-none !h-auto md:!h-full ${isPlaying ? 'ring-4 ring-green-50 scale-[1.02]' : ''}`}
 >
-{/* --- VỊ TRÍ CẬP NHẬT: Tăng gap-0 lên gap-2 --- */}
 <div className="flex flex-col items-center justify-center gap-2 w-full py-2 scale-75 md:scale-100 origin-top">
 {/* Hàng 1: Phép tính */}
 <div className="flex items-center justify-center">
 <span style={style.number} className="font-black text-gray-800 leading-none">{table}</span>
-<span style={style.operator} className="text-gray-200 font-light mx-2 md:mx-4">×</span>
+<span style={style.operator} className="text-gray-200 font-light mx-2 md:mx-4">{operatorSymbol}</span>
 <span style={style.number} className="font-black text-blue-600 leading-none">{factor}</span>
 </div>
 
@@ -129,7 +132,8 @@ className={`bg-white rounded-[2rem] shadow-lg border border-gray-100 flex flex-c
 {userAnswer || '?'}
 </div>
 ) : (
-<span style={style.number} className="font-black text-green-500 leading-none">{table * factor}</span>
+// --- VỊ TRÍ CẬP NHẬT: Sử dụng correctResult thay vì table * factor ---
+<span style={style.number} className="font-black text-green-500 leading-none">{correctResult}</span>
 )}
 </div>
 </div>
@@ -137,57 +141,57 @@ className={`bg-white rounded-[2rem] shadow-lg border border-gray-100 flex flex-c
 {/* Thông báo đúng sai (Overlay dưới cùng) */}
 {checkStatus && (
 <div style={style.feedbackText} className="absolute bottom-4 font-black animate-in fade-in slide-in-from-bottom-2 w-full text-center">
-<span className={`px-4 py-1 rounded-full ${checkStatus === 'correct' ? 'bg-green-100 text-green-600' : 'bg-red-50 text-red-500'}`}>{checkStatus === 'correct' ? 'CHÍNH XÁC!' : `ĐÁP ÁN LÀ ${table * factor}`}</span>
+{/* --- VỊ TRÍ CẬP NHẬT: Hiển thị correctResult trong thông báo --- */}
+<span className={`px-4 py-1 rounded-full ${checkStatus === 'correct' ? 'bg-green-100 text-green-600' : 'bg-red-50 text-red-500'}`}>{checkStatus === 'correct' ? 'CHÍNH XÁC!' : `ĐÁP ÁN LÀ ${correctResult}`}</span>
 </div>
 )}
 </div>
 );
 
 const KeypadBlock = ({ onNumber, onDelete, onSubmit, style }) => (
-// Wrapper để căn giữa (thay vì justify-end) và chiếm full chiều cao container cha
-<div className="w-full h-full flex flex-col justify-center md:justify-center">
-{/* Grid bàn phím tự động co giãn chiều cao (h-auto) */}
-<div className="grid grid-cols-3 gap-1 w-full h-auto md:h-full">
+<div className="grid grid-cols-3 gap-2 w-full h-full content-center">
 {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
 <button
 key={n}
 onClick={() => onNumber(n.toString())}
 style={{...style.keypadText}}
-className="bg-white hover:bg-blue-50 text-blue-600 font-black rounded-xl border-b-4 border-gray-100 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all h-10 md:h-full flex items-center justify-center shadow-sm"
+className="bg-white hover:bg-blue-50 text-blue-600 font-black rounded-xl border-b-4 border-gray-100 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all h-full min-h-[30px] flex items-center justify-center shadow-sm"
 >
 {n}
 </button>
 ))}
 <button
 onClick={onDelete}
-className="bg-red-50 hover:bg-red-100 text-red-400 rounded-xl border-b-4 border-red-100 active:border-b-0 active:translate-y-1 transition-all h-12 md:h-full flex items-center justify-center shadow-sm"
+className="bg-red-50 hover:bg-red-100 text-red-400 rounded-xl border-b-4 border-red-100 active:border-b-0 active:translate-y-1 transition-all h-full min-h-[30px] flex items-center justify-center shadow-sm"
 >
 <Icon name="Delete" size={24} />
 </button>
 <button
 onClick={() => onNumber('0')}
 style={style.keypadText}
-className="bg-white hover:bg-blue-50 text-blue-600 font-black rounded-xl border-b-4 border-gray-100 active:border-b-0 active:translate-y-1 transition-all h-12 md:h-full flex items-center justify-center shadow-sm"
+className="bg-white hover:bg-blue-50 text-blue-600 font-black rounded-xl border-b-4 border-gray-100 active:border-b-0 active:translate-y-1 transition-all h-full min-h-[30px] flex items-center justify-center shadow-sm"
 >
 0
 </button>
 <button
 onClick={onSubmit}
-className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl border-b-4 border-blue-800 active:border-b-0 active:translate-y-1 transition-all shadow-lg h-12 md:h-full flex items-center justify-center"
+className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl border-b-4 border-blue-800 active:border-b-0 active:translate-y-1 transition-all shadow-lg h-full min-h-[30px] flex items-center justify-center"
 >
 <Icon name="Check" size={28} />
 </button>
 </div>
-</div>
 );
+
+
+
 
 /**
 * BLOCK 4: MÀN HÌNH (VIEWS)
-* Version: ver1.8
-* Cập nhật: Thêm màn hình chờ (nút Bắt đầu) cho QuizScreenView.
+* Version: ver1.12
+* Cập nhật: Thu nhỏ 50% kích thước các nút chọn chế độ (Menu) trên điện thoại (responsive).
 */
 
-const MenuScreenView = ({ onStartStudy, onStartCheck, onStartQuiz, onOpenSettings, onOpenNotebook, notebookCount }) => (
+const MenuScreenView = ({ onStartStudy, onStartCheck, onStartQuiz, onOpenSettings, onOpenNotebook, notebookCount, operation, setOperation, subtractionLimit, setSubtractionLimit }) => (
 <div className="h-full w-full overflow-y-auto no-scrollbar relative">
 <div className="min-h-full flex flex-col items-center justify-center space-y-8 p-6">
 {/* Nút truy cập nhanh Sổ tay & Cài đặt */}
@@ -209,24 +213,79 @@ className="relative px-3 py-2 bg-white shadow-sm rounded-xl text-yellow-600 hove
 </button>
 </div>
 
+{/* Thanh chọn phép tính */}
+<div className="flex flex-col items-center gap-3 w-full max-w-md">
+<span className="text-xs font-bold text-gray-400 uppercase tracking-widest text-center animate-in fade-in slide-in-from-bottom-2">
+Hãy lựa chọn Bảng cửu chương muốn học
+</span>
+
+<div className="flex items-center gap-3 bg-white p-2 rounded-2xl shadow-sm border border-gray-100 animate-in slide-in-from-top fade-in duration-700">
+{[
+{ id: '+', icon: 'Plus', color: 'text-red-500', bg: 'bg-red-50', border: 'border-red-100' },
+{ id: '-', icon: 'Minus', color: 'text-orange-500', bg: 'bg-orange-50', border: 'border-orange-100' },
+{ id: 'x', icon: 'X', color: 'text-blue-500', bg: 'bg-blue-50', border: 'border-blue-100' },
+{ id: ':', icon: 'Divide', color: 'text-purple-500', bg: 'bg-purple-50', border: 'border-purple-100' }
+].map(op => (
+<button
+key={op.id}
+onClick={() => setOperation(op.id)}
+className={`w-12 h-12 rounded-xl flex items-center justify-center border-2 transition-all active:scale-90 ${
+operation === op.id
+? `${op.bg} ${op.border} ${op.color} shadow-inner scale-110 ring-2 ring-offset-2 ring-blue-50`
+: 'bg-transparent border-transparent text-gray-300 hover:bg-gray-50'
+}`}
+>
+<Icon name={op.icon} size={24} />
+</button>
+))}
+</div>
+
+{/* Tùy chọn cho phép trừ */}
+{operation === '-' && (
+<div className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl shadow-sm border border-orange-100 animate-in fade-in slide-in-from-top-2">
+<span className="text-[10px] font-bold text-gray-400 uppercase mr-2">Phạm vi:</span>
+{[20, 100].map(limit => (
+<button
+key={limit}
+onClick={() => setSubtractionLimit(limit)}
+className={`px-3 py-1 rounded-lg text-xs font-black border transition-all active:scale-95 ${
+subtractionLimit === limit
+? 'bg-orange-500 text-white border-orange-600 shadow-md'
+: 'bg-white text-gray-400 border-gray-200 hover:bg-gray-50'
+}`}
+>
+&lt; {limit}
+</button>
+))}
+</div>
+)}
+</div>
+
 <h1 className="text-4xl md:text-7xl font-black text-blue-600 mb-2 leading-tight text-center">Bé Vui Học Toán</h1>
 
+{/* --- VỊ TRÍ CẬP NHẬT: Tối ưu kích thước nút cho mobile --- */}
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-4xl">
-<button onClick={onStartStudy} className="p-8 bg-white rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all border border-gray-100 flex flex-col items-center active:scale-95 group">
-<div className="bg-green-50 p-4 rounded-full mb-4 group-hover:bg-green-100 transition-colors"><Icon name="BookOpen" size={40} className="text-green-600" /></div>
-<span className="text-xl font-black text-gray-800">Học Bài</span>
+<button onClick={onStartStudy} className="p-4 md:p-8 bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all border border-gray-100 flex flex-col items-center active:scale-95 group">
+<div className="bg-green-50 p-2 md:p-4 rounded-full mb-2 md:mb-4 group-hover:bg-green-100 transition-colors">
+<Icon name="BookOpen" className="!w-6 !h-6 md:!w-10 md:!h-10 text-green-600" />
+</div>
+<span className="text-sm md:text-xl font-black text-gray-800">Học Bài</span>
 <span className="text-[10px] text-gray-400 mt-1 uppercase tracking-wide">Xem thẻ</span>
 </button>
 
-<button onClick={onStartCheck} className="p-8 bg-white rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all border border-gray-100 flex flex-col items-center active:scale-95 group">
-<div className="bg-blue-50 p-4 rounded-full mb-4 group-hover:bg-blue-100 transition-colors"><Icon name="Check" size={40} className="text-blue-600" /></div>
-<span className="text-xl font-black text-gray-800">Kiểm Tra</span>
+<button onClick={onStartCheck} className="p-4 md:p-8 bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all border border-gray-100 flex flex-col items-center active:scale-95 group">
+<div className="bg-blue-50 p-2 md:p-4 rounded-full mb-2 md:mb-4 group-hover:bg-blue-100 transition-colors">
+<Icon name="Check" className="!w-6 !h-6 md:!w-10 md:!h-10 text-blue-600" />
+</div>
+<span className="text-sm md:text-xl font-black text-gray-800">Kiểm Tra</span>
 <span className="text-[10px] text-gray-400 mt-1 uppercase tracking-wide">Nhập số</span>
 </button>
 
-<button onClick={onStartQuiz} className="p-8 bg-white rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all border border-gray-100 flex flex-col items-center active:scale-95 group">
-<div className="bg-orange-50 p-4 rounded-full mb-4 group-hover:bg-orange-100 transition-colors"><Icon name="Brain" size={40} className="text-orange-600" /></div>
-<span className="text-xl font-black text-gray-800">Luyện Tập</span>
+<button onClick={onStartQuiz} className="p-4 md:p-8 bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all border border-gray-100 flex flex-col items-center active:scale-95 group">
+<div className="bg-orange-50 p-2 md:p-4 rounded-full mb-2 md:mb-4 group-hover:bg-orange-100 transition-colors">
+<Icon name="Brain" className="!w-6 !h-6 md:!w-10 md:!h-10 text-orange-600" />
+</div>
+<span className="text-sm md:text-xl font-black text-gray-800">Luyện Tập</span>
 <span className="text-[10px] text-gray-400 mt-1 uppercase tracking-wide">Trắc nghiệm</span>
 </button>
 </div>
@@ -263,7 +322,15 @@ Xác nhận
 );
 };
 
-const NotebookScreenView = ({ isOpen, onClose, mistakes, onClear, dynStyle, onReviewStudy, onReviewCheck, onReviewQuiz }) => {
+// Hàm tiện ích tính toán cục bộ dựa trên ký hiệu (Fix lỗi hiển thị sai kết quả)
+const calcBySymbol = (t, f, sym) => {
+if (sym === '+') return t + f;
+if (sym === '-') return t - f;
+if (sym === ':') return t / f;
+return t * f;
+};
+
+const NotebookScreenView = ({ isOpen, onClose, mistakes, onClear, dynStyle, onReviewStudy, onReviewCheck, onReviewQuiz, operatorSymbol = '×', calculateResult }) => {
 if (!isOpen) return null;
 return (
 <div className="absolute inset-0 z-[300] bg-white flex flex-col animate-in slide-in-from-bottom duration-500">
@@ -296,7 +363,8 @@ return (
 <div className="flex items-center gap-4">
 <span className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-black text-xs">{idx + 1}</span>
 <div className="font-black text-xl text-gray-800">
-{item.table} <span className="text-orange-400">×</span> {item.factor} <span className="text-blue-600">= {item.table * item.factor}</span>
+{/* --- FIX: Dùng calcBySymbol để đảm bảo hiển thị đúng kết quả theo dấu --- */}
+{item.table} <span className="text-orange-400">{operatorSymbol}</span> {item.factor} <span className="text-blue-600">= {calcBySymbol(item.table, item.factor, operatorSymbol)}</span>
 </div>
 </div>
 <Badge color="orange">Sai {item.count || 1} lần</Badge>
@@ -337,7 +405,9 @@ onNumberInput, onDeleteInput, onSubmitInput, onToggleTimeLimit, onTimeLimitChang
 onOpenNotebook, notebookCount,
 isCheckSessionActive, onSessionStart, onSessionEnd,
 isReviewMode,
-selectedTable
+selectedTable,
+operatorSymbol,
+calculateResult
 }) => (
 <div className="flex flex-col h-full overflow-hidden animate-in fade-in duration-500">
 <div className="pt-3 pb-2 px-4 bg-white/80 backdrop-blur-sm z-10 border-b border-gray-100 flex items-center justify-between shadow-sm">
@@ -346,7 +416,7 @@ selectedTable
 {isReviewMode && <span className="text-[10px] font-black uppercase">Thoát</span>}
 </button>
 <h2 className="text-[10px] md:text-sm font-black text-gray-500 uppercase">
-{isReviewMode ? "ÔN TẬP SỔ TAY" : (selectedTable === 'all' ? "TỔNG HỢP" : `BẢNG NHÂN ${selectedTable}`)}
+{isReviewMode ? "ÔN TẬP SỔ TAY" : (selectedTable === 'all' ? "TỔNG HỢP" : `BẢNG TÍNH ${selectedTable}`)}
 </h2>
 
 <div className="flex gap-2">
@@ -372,7 +442,17 @@ className="relative px-2 py-1.5 bg-white border border-yellow-100 shadow-sm roun
 
 <div className="flex-1 overflow-y-auto p-4 md:p-6 no-scrollbar bg-[#F8FAFC] flex flex-col items-center justify-start pt-2 md:justify-center md:pt-0 relative">
 <div style={{ gap: style.containerGap }} className="flex flex-col md:flex-row items-center md:items-stretch justify-center w-full transition-all duration-500">
-<FlashCardBlock table={table === 'all' ? Math.floor(Math.random()*8)+2 : table} factor={factor} isInputMode={isInputMode} userAnswer={userAnswer} checkStatus={checkStatus} isPlaying={isPlaying} style={style} />
+<FlashCardBlock
+table={table === 'all' ? Math.floor(Math.random()*8)+2 : table}
+factor={factor}
+isInputMode={isInputMode}
+userAnswer={userAnswer}
+checkStatus={checkStatus}
+isPlaying={isPlaying}
+style={style}
+operatorSymbol={operatorSymbol}
+correctResult={calculateResult ? calculateResult(table, factor) : (table * factor)}
+/>
 <div style={style.card} className="flex flex-col transition-all duration-500 !h-auto md:!h-full">
 {isInputMode ? (
 <div className="bg-white p-5 md:p-6 rounded-[2rem] shadow-lg border border-gray-100 flex flex-col gap-3 h-full justify-center w-full relative overflow-y-auto no-scrollbar">
@@ -404,7 +484,7 @@ className="relative px-2 py-1.5 bg-white border border-yellow-100 shadow-sm roun
 <div className="flex items-center gap-2"><Icon name="ThumbsDown" size={18} className="text-red-400" /><span className="text-lg font-black text-red-400">{stats.incorrect}</span></div>
 </div>
 
-<div className="w-full">
+<div className="flex-1 min-h-0">
 <KeypadBlock onNumber={onNumberInput} onDelete={onDeleteInput} onSubmit={onSubmitInput} style={style} />
 </div>
 
@@ -433,8 +513,7 @@ className="relative px-2 py-1.5 bg-white border border-yellow-100 shadow-sm roun
 </div>
 );
 
-// --- VỊ TRÍ CẬP NHẬT: Thêm props isQuizSessionActive, onSessionStart ---
-const QuizScreenView = ({ score, count, TOTAL, question, feedback, onAnswer, goHome, openSettings, dynStyle, isReviewMode, table, onSelectTable, onSessionEnd, isQuizSessionActive, onSessionStart }) => {
+const QuizScreenView = ({ score, count, TOTAL, question, feedback, onAnswer, goHome, openSettings, dynStyle, isReviewMode, table, onSelectTable, onSessionEnd, isQuizSessionActive, onSessionStart, operatorSymbol }) => {
 if (!question) return null;
 return (
 <div className="flex flex-col h-full overflow-hidden">
@@ -450,12 +529,11 @@ return (
 {!isReviewMode && <TableSelector current={table} onSelect={onSelectTable} />}
 
 <div className="flex-1 p-4 bg-[#F8FAFC] flex flex-col items-center justify-center">
-{/* --- VỊ TRÍ CẬP NHẬT: Logic hiển thị Màn hình chờ hoặc Game --- */}
 {!isQuizSessionActive ? (
 <div className="flex flex-col items-center justify-center h-full gap-6 animate-in fade-in w-full max-w-md">
 <div className="text-center">
 <h3 className="text-xl font-black text-gray-800 uppercase mb-2">Trắc nghiệm nhanh</h3>
-<p className="text-sm text-gray-400">10 câu hỏi - Chọn đáp án đúng nhất</p>
+<p className="text-sm text-gray-400">30 câu hỏi - Chọn đáp án đúng nhất</p>
 </div>
 <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 flex flex-col items-center w-full">
 <Icon name="Brain" size={64} className="text-orange-400 mb-4" />
@@ -469,7 +547,8 @@ return (
 <div className="bg-white p-6 rounded-[2rem] shadow-lg w-full max-w-md text-center relative overflow-hidden border border-gray-100 animate-in slide-in-from-right">
 {feedback === 'correct' && <div className="absolute inset-0 bg-green-500/90 flex items-center justify-center z-20"><Icon name="Check" size={80} className="text-white animate-bounce" /></div>}
 {feedback === 'incorrect' && <div className="absolute inset-0 bg-red-500/90 flex flex-col items-center justify-center p-4 z-20"><Icon name="X" size={80} className="text-white" /><p className="text-white font-black mt-2">ĐÁP ÁN: {question.correctAnswer}</p></div>}
-<div style={{ fontSize: `calc(${dynStyle.number.fontSize} * 1.5)` }} className="font-black text-gray-800">{question.num1} <span className="text-orange-500">×</span> {question.num2}</div>
+{/* --- VỊ TRÍ CẬP NHẬT 4: Hiển thị operatorSymbol --- */}
+<div style={{ fontSize: `calc(${dynStyle.number.fontSize} * 1.5)` }} className="font-black text-gray-800">{question.num1} <span className="text-orange-500">{operatorSymbol}</span> {question.num2}</div>
 </div>
 <div className="grid grid-cols-2 gap-2 w-full max-w-md mt-4 animate-in slide-in-from-bottom duration-500">{question.answers.map((ans, idx) => (<button key={idx} onClick={() => onAnswer(ans)} disabled={feedback !== null} style={{ fontSize: `calc(${dynStyle.number.fontSize} * 0.5)` }} className={`py-4 rounded-xl font-black border-b-4 ${feedback ? 'bg-gray-50 text-gray-200' : 'bg-white text-blue-600 border-blue-50'}`}>{ans}</button>))}</div>
 
@@ -496,8 +575,8 @@ return (
 };
 /**
 * BLOCK 5: LOGIC (CUSTOM HOOKS)
-* Version: ver1.0
-* Cập nhật: Giảm containerGap từ 24 xuống 8 để thu hẹp khoảng cách giữa Flashcard và bảng điều khiển.
+* Version: ver1.7
+* Cập nhật: Sửa logic khởi tạo để phép trừ bắt đầu từ 0 (kết quả 0) và phép chia bắt đầu từ 1.
 */
 const useScaling = () => {
 const [scale, setScale] = useState(100);
@@ -526,21 +605,55 @@ inputWidth: { minWidth: `${finalW * 0.4}px` },
 feedbackText: { fontSize: `${Math.max(10, minDim * 0.04)}px` },
 keypadText: { fontSize: `${30 * s}px` },
 keypadBtnPadding: { padding: `${12 * s}px 0` },
-containerGap: `${8 * s}px` // CHANGED HERE: 24 -> 8
+containerGap: `${4 * s}px`
 };
 }, [scale, ratioMode]);
 return { scale, setScale, appSizeId, setAppSizeId, ratioMode, setRatioMode, appFrameClass, dynStyle };
 };
 
-const useMathLogic = (selectedTable, isRandomMode) => {
+const useMathLogic = (selectedTable, isRandomMode, operation, subtractionLimit) => {
 const [studyFactor, setStudyFactor] = useState(1);
 const [currentDisplayTable, setCurrentDisplayTable] = useState(2);
 const shuffledQueueRef = useRef([]);
+const iteratorRef = useRef(1);
 
 // Logic ôn tập
 const [isReviewing, setIsReviewing] = useState(false);
 const reviewQueue = useRef([]);
 const originalMistakes = useRef([]);
+
+// --- VỊ TRÍ CẬP NHẬT: Reset về giá trị khởi đầu đúng logic toán học ---
+useEffect(() => {
+// Xác định số bắt đầu: 0 cho cộng/trừ, 1 cho nhân/chia
+const startVal = (operation === '-' || operation === '+') ? 0 : 1;
+
+iteratorRef.current = startVal + 1; // Chuẩn bị cho bước tiếp theo
+
+let tbl = selectedTable === 'all' ? 2 : selectedTable;
+
+// Thiết lập giá trị hiển thị ban đầu
+switch (operation) {
+case 'x': // Bảng x 1
+setCurrentDisplayTable(tbl);
+setStudyFactor(startVal);
+break;
+case ':': // (Bảng * 1) : Bảng
+setCurrentDisplayTable(tbl * startVal);
+setStudyFactor(tbl);
+break;
+case '+': // Bảng + 0
+setCurrentDisplayTable(tbl);
+setStudyFactor(startVal);
+break;
+case '-': // (Bảng + 0) - Bảng
+setCurrentDisplayTable(tbl + startVal);
+setStudyFactor(tbl);
+break;
+default:
+setCurrentDisplayTable(tbl);
+setStudyFactor(startVal);
+}
+}, [selectedTable, operation, subtractionLimit]); // Reset khi đổi bảng, phép tính hoặc giới hạn
 
 const startReview = useCallback((mistakes) => {
 if (!mistakes || mistakes.length === 0) return;
@@ -556,6 +669,7 @@ originalMistakes.current = [];
 }, []);
 
 const nextStudyStep = useCallback(() => {
+// 1. Chế độ Ôn tập
 if (isReviewing) {
 if (reviewQueue.current.length === 0) {
 reviewQueue.current = [...originalMistakes.current].sort(() => Math.random() - 0.5);
@@ -568,19 +682,85 @@ setStudyFactor(nextItem.factor);
 return;
 }
 
-if (selectedTable === 'all') setCurrentDisplayTable(Math.floor(Math.random() * 8) + 2);
-else setCurrentDisplayTable(selectedTable);
+// 2. Chế độ Sinh số mới
+let tbl;
+if (selectedTable === 'all') tbl = Math.floor(Math.random() * 8) + 2;
+else tbl = selectedTable;
 
-setStudyFactor(prev => {
+let base;
 if (isRandomMode) {
-if (shuffledQueueRef.current.length === 0) shuffledQueueRef.current = [1,2,3,4,5,6,7,8,9,10].sort(()=>Math.random()-0.5);
-return shuffledQueueRef.current.pop();
+if (shuffledQueueRef.current.length === 0) {
+shuffledQueueRef.current = [0,1,2,3,4,5,6,7,8,9,10].filter(n => {
+// Lọc số 0 nếu là nhân/chia để tránh phức tạp hoặc giữ lại tùy ý, ở đây giữ logic cũ cho nhân/chia là 1-10
+if ((operation === 'x' || operation === ':') && n === 0) return false;
+return true;
+}).sort(()=>Math.random()-0.5);
 }
-return prev >= 10 ? 1 : prev + 1;
-});
-}, [selectedTable, isRandomMode, isReviewing]);
+base = shuffledQueueRef.current.pop();
+} else {
+base = iteratorRef.current;
+const startVal = (operation === '-' || operation === '+') ? 0 : 1;
+iteratorRef.current = base >= 10 ? startVal : base + 1;
+}
 
-return { studyFactor, setStudyFactor, currentDisplayTable, nextStudyStep, startReview, endReview, isReviewing };
+switch (operation) {
+case 'x':
+setCurrentDisplayTable(tbl);
+setStudyFactor(base);
+break;
+case ':':
+setCurrentDisplayTable(tbl * base);
+setStudyFactor(tbl);
+break;
+case '+':
+setCurrentDisplayTable(tbl);
+setStudyFactor(base);
+break;
+case '-':
+if (subtractionLimit === 100 && isRandomMode) {
+const maxMinuend = 99;
+const minMinuend = tbl; // Hiệu tối thiểu là 0
+const minuend = Math.floor(Math.random() * (maxMinuend - minMinuend + 1)) + minMinuend;
+setCurrentDisplayTable(minuend);
+setStudyFactor(tbl);
+} else {
+setCurrentDisplayTable(tbl + base);
+setStudyFactor(tbl);
+}
+break;
+default:
+setCurrentDisplayTable(tbl);
+setStudyFactor(base);
+}
+
+}, [selectedTable, isRandomMode, isReviewing, operation, subtractionLimit]);
+
+const calculateResult = useCallback((t, f) => {
+switch (operation) {
+case 'x': return t * f;
+case ':': return t / f;
+case '+': return t + f;
+case '-': return t - f;
+default: return t * f;
+}
+}, [operation]);
+
+const getOperatorSymbol = useCallback(() => {
+switch (operation) {
+case 'x': return '×';
+case ':': return ':';
+case '+': return '+';
+case '-': return '-';
+default: return '×';
+}
+}, [operation]);
+
+return {
+studyFactor, setStudyFactor,
+currentDisplayTable, nextStudyStep,
+startReview, endReview, isReviewing,
+calculateResult, getOperatorSymbol
+};
 };
 
 const useNotebook = () => {
@@ -604,11 +784,10 @@ setMistakes([]);
 
 return { mistakes, addMistake, clearNotebook };
 };
-
 /**
 * BLOCK 6: ĐIỀU KHIỂN (CONTROLLER / APP)
-* Version: ver1.5
-* Cập nhật: Tăng số câu trắc nghiệm lên 30. Khi làm xong tự động hiện bảng kết quả.
+* Version: ver1.7
+* Cập nhật: Kết nối logic tính toán (calculateResult) và ký hiệu phép tính (operatorSymbol) cho các phép +, -, x, :.
 */
 const App = () => {
 const [screen, setScreen] = useState('menu');
@@ -617,15 +796,16 @@ const [isNotebookOpen, setIsNotebookOpen] = useState(false);
 const [isCheckSessionActive, setIsCheckSessionActive] = useState(false);
 const [isResultOpen, setIsResultOpen] = useState(false);
 
-// --- VỊ TRÍ THÊM MỚI: State cho phiên trắc nghiệm ---
 const [isQuizSessionActive, setIsQuizSessionActive] = useState(false);
-
 const [isQuizReviewMode, setIsQuizReviewMode] = useState(false);
+
+const [operation, setOperation] = useState('x');
+const [subtractionLimit, setSubtractionLimit] = useState(20);
 
 const scaleSudo = useScaling();
 
 const [selectedTable, setSelectedTable] = useState(2);
-const [isRandomMode, setIsRandomMode] = useState(true);
+const [isRandomMode, setIsRandomMode] = useState(false);
 
 const [isPlaying, setIsPlaying] = useState(false);
 const [isInputMode, setIsInputMode] = useState(false);
@@ -641,7 +821,7 @@ const [quizQuestion, setQuizQuestion] = useState(null);
 const [quizFeedback, setQuizFeedback] = useState(null);
 
 // Khởi tạo logic toán học từ custom hook (Block 5)
-const math = useMathLogic(selectedTable, isRandomMode);
+const math = useMathLogic(selectedTable, isRandomMode, operation, subtractionLimit);
 
 // Khởi tạo logic sổ tay (Block 5)
 const notebook = useNotebook();
@@ -667,14 +847,17 @@ n1 = selectedTable;
 n2 = Math.floor(Math.random() * 10) + 1;
 }
 
-const correct = n1 * n2;
+// --- VỊ TRÍ CẬP NHẬT: Dùng calculateResult thay vì nhân cứng ---
+const correct = math.calculateResult(n1, n2);
+
 let ans = [correct];
 while(ans.length < 4) {
 let w = Math.random() > 0.5 ? correct + Math.floor(Math.random()*5)+1 : Math.max(1, correct - Math.floor(Math.random()*5)-1);
-if(!ans.includes(w) && w > 0) ans.push(w);
+// Đảm bảo đáp án nhiễu không trùng và không âm (với phép trừ)
+if(!ans.includes(w) && w >= 0) ans.push(w);
 }
 setQuizQuestion({ num1: n1, num2: n2, correctAnswer: correct, answers: ans.sort(() => Math.random() - 0.5) });
-}, [isQuizReviewMode, notebook.mistakes, selectedTable]);
+}, [isQuizReviewMode, notebook.mistakes, selectedTable, math]); // Thêm math vào dependency
 
 const handleQuizAnswer = (val) => {
 if(quizFeedback) return;
@@ -686,7 +869,6 @@ setQuizFeedback('incorrect');
 notebook.addMistake(quizQuestion.num1, quizQuestion.num2);
 }
 setTimeout(() => {
-// --- CẬP NHẬT: Kết thúc sau 30 câu và hiện bảng kết quả ---
 if(quizCount + 1 >= 30) {
 handleQuizEnd();
 } else {
@@ -708,7 +890,6 @@ setIsCheckSessionActive(false);
 setIsResultOpen(true);
 };
 
-// --- VỊ TRÍ THÊM MỚI: Handler Bắt đầu Trắc nghiệm ---
 const handleQuizStart = () => {
 setIsQuizSessionActive(true);
 generateQuizQuestion();
@@ -749,17 +930,16 @@ setIsNotebookOpen(false);
 setIsQuizReviewMode(true);
 setQuizScore(0);
 setQuizCount(0);
-setIsQuizSessionActive(false); // Hiện màn hình chờ
-generateQuizQuestion(true); // FIX: Tạo câu hỏi khởi tạo để tránh màn hình trắng
+setIsQuizSessionActive(false);
+generateQuizQuestion(true);
 setScreen('quiz');
 };
 
 useEffect(() => {
-// Tự động cập nhật bài học khi chọn bảng mới (chỉ áp dụng cho Study mode)
 if (screen === 'study' && !math.isReviewing) {
 math.nextStudyStep();
 }
-}, [selectedTable]);
+}, [selectedTable, operation]); // Thêm operation để đổi số khi đổi phép tính
 
 useEffect(() => {
 let itv;
@@ -799,13 +979,17 @@ onStartQuiz={() => {
 setIsQuizReviewMode(false);
 setQuizScore(0);
 setQuizCount(0);
-setIsQuizSessionActive(false); // Hiện màn hình chờ
-generateQuizQuestion(false); // FIX: Tạo câu hỏi khởi tạo để tránh màn hình trắng
+setIsQuizSessionActive(false);
+generateQuizQuestion(false);
 setScreen('quiz');
 }}
 onOpenSettings={() => setIsSettingsOpen(true)}
 onOpenNotebook={() => setIsNotebookOpen(true)}
 notebookCount={notebook.mistakes.length}
+operation={operation}
+setOperation={setOperation}
+subtractionLimit={subtractionLimit}
+setSubtractionLimit={setSubtractionLimit}
 />
 )}
 
@@ -819,11 +1003,9 @@ onBack={() => {
 setScreen('menu');
 setIsPlaying(false);
 setIsCheckSessionActive(false);
-
 if (math.isReviewing) {
 setIsNotebookOpen(true);
 }
-
 math.endReview();
 }}
 onOpenSettings={() => setIsSettingsOpen(true)}
@@ -833,7 +1015,8 @@ onEnterInputMode={(v) => {setIsInputMode(v); setIsPlaying(false); setStats({corr
 onNumberInput={(n) => setUserAnswer(p => p.length < 3 ? p + n : p)} onDeleteInput={() => setUserAnswer(p => p.slice(0, -1))}
 onSubmitInput={() => {
 if(!userAnswer || checkStatus) return;
-if(parseInt(userAnswer) === math.currentDisplayTable * math.studyFactor) {
+// --- VỊ TRÍ CẬP NHẬT: Dùng calculateResult ---
+if(parseInt(userAnswer) === math.calculateResult(math.currentDisplayTable, math.studyFactor)) {
 setCheckStatus('correct');
 setStats(p => ({...p, correct: p.correct+1}));
 } else {
@@ -851,12 +1034,13 @@ onSessionStart={handleSessionStart}
 onSessionEnd={handleSessionEnd}
 isReviewMode={math.isReviewing}
 selectedTable={selectedTable}
+// --- VỊ TRÍ CẬP NHẬT: Truyền ký hiệu phép tính ---
+operatorSymbol={math.getOperatorSymbol()}
 />
 )}
 
 {screen === 'quiz' && (
 <QuizScreenView
-// --- CẬP NHẬT: TOTAL=30 ---
 score={quizScore} count={quizCount} TOTAL={30} question={quizQuestion} feedback={quizFeedback}
 onAnswer={handleQuizAnswer}
 goHome={() => {
@@ -872,9 +1056,10 @@ isReviewMode={isQuizReviewMode}
 table={selectedTable}
 onSelectTable={(t) => setSelectedTable(t)}
 onSessionEnd={handleQuizEnd}
-// --- VỊ TRÍ CẬP NHẬT: Truyền props cho Quiz ---
 isQuizSessionActive={isQuizSessionActive}
 onSessionStart={handleQuizStart}
+// --- VỊ TRÍ CẬP NHẬT: Truyền ký hiệu phép tính cho Quiz ---
+operatorSymbol={math.getOperatorSymbol()}
 />
 )}
 
