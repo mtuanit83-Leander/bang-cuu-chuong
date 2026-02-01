@@ -96,8 +96,8 @@ active ? `bg-${color}-100 text-${color}-600 shadow-inner ring-2 ring-${color}-20
 );
 /**
 * BLOCK 3: KHỐI (BLOCKS)
-* Version: ver1.12
-* Cập nhật: Thêm hiển thị thanh điểm số (stats) vào góc trên của FlashCardBlock.
+* Version: ver1.13
+* Cập nhật: Khôi phục thanh điểm số (stats) bị mất. Giữ nguyên Gap-2 và Top Align.
 */
 const TableSelector = ({ current, onSelect }) => (
 <div className="flex justify-center items-center gap-1.5 overflow-x-auto no-scrollbar py-2 px-4 bg-white/50 border-b border-gray-100">
@@ -107,20 +107,20 @@ const TableSelector = ({ current, onSelect }) => (
 <button onClick={() => onSelect('all')} className={`flex-shrink-0 w-8 h-8 md:w-9 md:h-9 rounded-lg font-black text-xs transition-all border flex items-center justify-center ${current === 'all' ? 'bg-purple-600 text-white border-purple-600 scale-105 shadow-md' : 'bg-white text-purple-400 border-purple-100 hover:bg-purple-50'}`}><Icon name="Sigma" size={16} /></button>
 </div>
 );
-// --- VỊ TRÍ CẬP NHẬT: Thêm prop stats ---
+// --- VỊ TRÍ CẬP NHẬT: Thêm prop stats vào danh sách tham số ---
 const FlashCardBlock = ({ table, factor, isInputMode, userAnswer, checkStatus, isPlaying, style, operatorSymbol = '×', correctResult, stats }) => (
 <div
 style={style.card}
 className={`bg-white rounded-[2rem] shadow-lg border border-gray-100 flex flex-col items-center justify-start pt-10 md:justify-center md:pt-0 sync-scale relative overflow-hidden max-h-[35vh] md:max-h-none !h-auto md:!h-full ${isPlaying ? 'ring-4 ring-green-50 scale-[1.02]' : ''}`}
 >
-{/* --- VỊ TRÍ THÊM MỚI: Thanh điểm số nằm trên đầu thẻ --- */}
+{/* --- KHÔI PHỤC: Thanh điểm số --- */}
 {isInputMode && stats && (
 <div className="absolute top-3 left-0 w-full px-6 flex justify-between items-center text-xs font-black opacity-80 z-10">
 <div className="flex items-center gap-1 text-green-500"><Icon name="ThumbsUp" size={16}/> {stats.correct}</div>
 <div className="flex items-center gap-1 text-red-500"><Icon name="ThumbsDown" size={16}/> {stats.incorrect}</div>
 </div>
 )}
-{/* --- VỊ TRÍ CẬP NHẬT: Tăng gap-0 lên gap-2 --- */}
+{/* Nội dung chính (Giữ nguyên Gap 2 và Top Align) */}
 <div className="flex flex-col items-center justify-center gap-2 w-full py-2 scale-75 md:scale-100 origin-top">
 {/* Hàng 1: Phép tính */}
 <div className="flex items-center justify-center">
@@ -128,7 +128,7 @@ className={`bg-white rounded-[2rem] shadow-lg border border-gray-100 flex flex-c
 <span style={style.operator} className="text-gray-200 font-light mx-2 md:mx-4">{operatorSymbol}</span>
 <span style={style.number} className="font-black text-blue-600 leading-none">{factor}</span>
 </div>
-{/* Hàng 2: Kết quả / Ô nhập - Bỏ margin âm, trả về relative */}
+{/* Hàng 2: Kết quả / Ô nhập */}
 <div className="flex items-center justify-center relative">
 <span style={style.operator} className="text-gray-200 font-light mr-2 md:mr-4">=</span>
 {isInputMode ? (
@@ -140,7 +140,7 @@ className={`bg-white rounded-[2rem] shadow-lg border border-gray-100 flex flex-c
 )}
 </div>
 </div>
-{/* Thông báo đúng sai (Overlay dưới cùng) */}
+{/* Thông báo đúng sai */}
 {checkStatus && (
 <div style={style.feedbackText} className="absolute bottom-4 font-black animate-in fade-in slide-in-from-bottom-2 w-full text-center">
 <span className={`px-4 py-1 rounded-full ${checkStatus === 'correct' ? 'bg-green-100 text-green-600' : 'bg-red-50 text-red-500'}`}>{checkStatus === 'correct' ? 'CHÍNH XÁC!' : `ĐÁP ÁN LÀ ${correctResult}`}</span>
@@ -149,9 +149,7 @@ className={`bg-white rounded-[2rem] shadow-lg border border-gray-100 flex flex-c
 </div>
 );
 const KeypadBlock = ({ onNumber, onDelete, onSubmit, style }) => (
-// Wrapper để căn giữa (thay vì justify-end) và chiếm full chiều cao container cha
 <div className="w-full h-full flex flex-col justify-center md:justify-center">
-{/* Grid bàn phím tự động co giãn chiều cao (h-auto) */}
 <div className="grid grid-cols-3 gap-2 w-full h-auto md:h-full">
 {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
 <button
