@@ -726,8 +726,8 @@ return { mistakes, addMistake, clearNotebook };
 };
 /**
 * BLOCK 6: ĐIỀU KHIỂN (CONTROLLER / APP)
-* Version: ver1.10
-* Cập nhật: Ép buộc chế độ Ngẫu nhiên (Random) khi ở trong chế độ Kiểm tra hoặc Trắc nghiệm.
+* Version: ver1.11
+* Cập nhật: Sửa lỗi treo ứng dụng trong chế độ Kiểm tra bằng cách thêm math.currentDisplayTable vào dependency của useEffect reset.
 */
 const App = () => {
 const [screen, setScreen] = useState('menu');
@@ -741,7 +741,7 @@ const [operation, setOperation] = useState('x');
 const [subtractionLimit, setSubtractionLimit] = useState(20);
 const scaleSudo = useScaling();
 const [selectedTable, setSelectedTable] = useState(2);
-const [isRandomMode, setIsRandomMode] = useState(false); // Mặc định là Tuần tự cho chế độ Học
+const [isRandomMode, setIsRandomMode] = useState(false); // Mặc định là Tuần tự
 const [isPlaying, setIsPlaying] = useState(false);
 const [isInputMode, setIsInputMode] = useState(false);
 const [userAnswer, setUserAnswer] = useState('');
@@ -753,7 +753,7 @@ const [quizScore, setQuizScore] = useState(0);
 const [quizCount, setQuizCount] = useState(0);
 const [quizQuestion, setQuizQuestion] = useState(null);
 const [quizFeedback, setQuizFeedback] = useState(null);
-// --- FIX: Tự động bật Ngẫu nhiên khi Kiểm tra (InputMode) hoặc Trắc nghiệm (Quiz) ---
+// FIX: Tự động bật Ngẫu nhiên khi Kiểm tra (InputMode) hoặc Trắc nghiệm (Quiz)
 const effectiveRandomMode = (isInputMode || screen === 'quiz') ? true : isRandomMode;
 // Khởi tạo logic toán học từ custom hook (Block 5)
 const math = useMathLogic(selectedTable, effectiveRandomMode, operation, subtractionLimit);
@@ -874,7 +874,8 @@ setTimeout(math.nextStudyStep, 1500);
 }
 return () => clearInterval(itv);
 }, [isPlaying, isInputMode, isCheckSessionActive, isTimeLimitEnabled, timeLimitValue, userAnswer, checkStatus, math.nextStudyStep, math.currentDisplayTable, math.studyFactor]);
-useEffect(() => { setUserAnswer(''); setCheckStatus(null); }, [math.studyFactor]);
+// --- VỊ TRÍ SỬA LỖI: Thêm math.currentDisplayTable vào dependency để reset khi số đầu thay đổi ---
+useEffect(() => { setUserAnswer(''); setCheckStatus(null); }, [math.studyFactor, math.currentDisplayTable]);
 return (
 <div className="min-h-screen bg-[#F0F4F8] flex items-center justify-center p-0 md:p-4">
 <div className={`w-full ${scaleSudo.appFrameClass} bg-white md:rounded-[3rem] shadow-2xl relative overflow-hidden border-2 md:border-[12px] border-white flex flex-col`}>
