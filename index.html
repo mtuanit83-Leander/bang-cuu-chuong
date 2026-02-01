@@ -98,8 +98,8 @@ active ? `bg-${color}-100 text-${color}-600 shadow-inner ring-2 ring-${color}-20
 );
 /**
 * BLOCK 3: KHỐI (BLOCKS)
-* Version: ver1.10
-* Cập nhật: FlashCardBlock nhận prop correctResult để hiển thị kết quả đúng (thay vì tự nhân table * factor).
+* Version: ver1.11
+* Cập nhật: Tăng khoảng cách trong FlashCardBlock (gap-2) và bỏ margin âm để nội dung thoáng hơn.
 */
 const TableSelector = ({ current, onSelect }) => (
 <div className="flex justify-center items-center gap-1.5 overflow-x-auto no-scrollbar py-2 px-4 bg-white/50 border-b border-gray-100">
@@ -116,6 +116,7 @@ const FlashCardBlock = ({ table, factor, isInputMode, userAnswer, checkStatus, i
 style={style.card}
 className={`bg-white rounded-[2rem] shadow-lg border border-gray-100 flex flex-col items-center justify-start pt-10 md:justify-center md:pt-0 sync-scale relative overflow-hidden max-h-[35vh] md:max-h-none !h-auto md:!h-full ${isPlaying ? 'ring-4 ring-green-50 scale-[1.02]' : ''}`}
 >
+{/* --- VỊ TRÍ CẬP NHẬT: Tăng gap-0 lên gap-2 --- */}
 <div className="flex flex-col items-center justify-center gap-2 w-full py-2 scale-75 md:scale-100 origin-top">
 {/* Hàng 1: Phép tính */}
 <div className="flex items-center justify-center">
@@ -124,7 +125,7 @@ className={`bg-white rounded-[2rem] shadow-lg border border-gray-100 flex flex-c
 <span style={style.number} className="font-black text-blue-600 leading-none">{factor}</span>
 </div>
 
-{/* Hàng 2: Kết quả / Ô nhập - Bỏ margin âm */}
+{/* Hàng 2: Kết quả / Ô nhập - Bỏ margin âm, trả về relative */}
 <div className="flex items-center justify-center relative">
 <span style={style.operator} className="text-gray-200 font-light mr-2 md:mr-4">=</span>
 {isInputMode ? (
@@ -132,7 +133,6 @@ className={`bg-white rounded-[2rem] shadow-lg border border-gray-100 flex flex-c
 {userAnswer || '?'}
 </div>
 ) : (
-// --- VỊ TRÍ CẬP NHẬT: Sử dụng correctResult thay vì table * factor ---
 <span style={style.number} className="font-black text-green-500 leading-none">{correctResult}</span>
 )}
 </div>
@@ -141,7 +141,6 @@ className={`bg-white rounded-[2rem] shadow-lg border border-gray-100 flex flex-c
 {/* Thông báo đúng sai (Overlay dưới cùng) */}
 {checkStatus && (
 <div style={style.feedbackText} className="absolute bottom-4 font-black animate-in fade-in slide-in-from-bottom-2 w-full text-center">
-{/* --- VỊ TRÍ CẬP NHẬT: Hiển thị correctResult trong thông báo --- */}
 <span className={`px-4 py-1 rounded-full ${checkStatus === 'correct' ? 'bg-green-100 text-green-600' : 'bg-red-50 text-red-500'}`}>{checkStatus === 'correct' ? 'CHÍNH XÁC!' : `ĐÁP ÁN LÀ ${correctResult}`}</span>
 </div>
 )}
@@ -149,46 +148,47 @@ className={`bg-white rounded-[2rem] shadow-lg border border-gray-100 flex flex-c
 );
 
 const KeypadBlock = ({ onNumber, onDelete, onSubmit, style }) => (
-<div className="grid grid-cols-3 gap-2 w-full h-full content-center">
+// Wrapper để căn giữa (thay vì justify-end) và chiếm full chiều cao container cha
+<div className="w-full h-full flex flex-col justify-center md:justify-center">
+{/* Grid bàn phím tự động co giãn chiều cao (h-auto) */}
+<div className="grid grid-cols-3 gap-2 w-full h-auto md:h-full">
 {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
 <button
 key={n}
 onClick={() => onNumber(n.toString())}
 style={{...style.keypadText}}
-className="bg-white hover:bg-blue-50 text-blue-600 font-black rounded-xl border-b-4 border-gray-100 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all h-full min-h-[30px] flex items-center justify-center shadow-sm"
+className="bg-white hover:bg-blue-50 text-blue-600 font-black rounded-xl border-b-4 border-gray-100 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all h-12 md:h-full flex items-center justify-center shadow-sm"
 >
 {n}
 </button>
 ))}
 <button
 onClick={onDelete}
-className="bg-red-50 hover:bg-red-100 text-red-400 rounded-xl border-b-4 border-red-100 active:border-b-0 active:translate-y-1 transition-all h-full min-h-[30px] flex items-center justify-center shadow-sm"
+className="bg-red-50 hover:bg-red-100 text-red-400 rounded-xl border-b-4 border-red-100 active:border-b-0 active:translate-y-1 transition-all h-12 md:h-full flex items-center justify-center shadow-sm"
 >
 <Icon name="Delete" size={24} />
 </button>
 <button
 onClick={() => onNumber('0')}
 style={style.keypadText}
-className="bg-white hover:bg-blue-50 text-blue-600 font-black rounded-xl border-b-4 border-gray-100 active:border-b-0 active:translate-y-1 transition-all h-full min-h-[30px] flex items-center justify-center shadow-sm"
+className="bg-white hover:bg-blue-50 text-blue-600 font-black rounded-xl border-b-4 border-gray-100 active:border-b-0 active:translate-y-1 transition-all h-12 md:h-full flex items-center justify-center shadow-sm"
 >
 0
 </button>
 <button
 onClick={onSubmit}
-className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl border-b-4 border-blue-800 active:border-b-0 active:translate-y-1 transition-all shadow-lg h-full min-h-[30px] flex items-center justify-center"
+className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl border-b-4 border-blue-800 active:border-b-0 active:translate-y-1 transition-all shadow-lg h-12 md:h-full flex items-center justify-center"
 >
 <Icon name="Check" size={28} />
 </button>
 </div>
+</div>
 );
-
-
-
 
 /**
 * BLOCK 4: MÀN HÌNH (VIEWS)
 * Version: ver1.14
-* Cập nhật: Áp dụng calcBySymbol cho StudyScreenView để sửa lỗi hiển thị sai kết quả trong chế độ Học.
+* Cập nhật: Truyền stats vào FlashCardBlock và dọn dẹp thanh điểm số cũ ở bên dưới (StudyScreenView).
 */
 
 const MenuScreenView = ({ onStartStudy, onStartCheck, onStartQuiz, onOpenSettings, onOpenNotebook, notebookCount, operation, setOperation, subtractionLimit, setSubtractionLimit }) => (
@@ -321,7 +321,7 @@ Xác nhận
 );
 };
 
-// Hàm tiện ích tính toán cục bộ dựa trên ký hiệu
+// Hàm tiện ích tính toán cục bộ dựa trên ký hiệu (Fix lỗi hiển thị sai kết quả)
 const calcBySymbol = (t, f, sym) => {
 if (sym === '+') return t + f;
 if (sym === '-') return t - f;
@@ -362,7 +362,8 @@ return (
 <div className="flex items-center gap-4">
 <span className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-black text-xs">{idx + 1}</span>
 <div className="font-black text-xl text-gray-800">
-{item.table} <span className="text-orange-400">{operatorSymbol}</span> {item.factor} <span className="text-blue-600">= {calcBySymbol(item.table, item.factor, operatorSymbol)}</span>
+{/* --- FIX: Dùng calcBySymbol để đảm bảo hiển thị đúng kết quả theo dấu --- */}
+{item.table} <span className="text-orange-400">{operatorSymbol}</span> {item.factor} <span className="text-blue-600">= {calculateResult ? calculateResult(item.table, item.factor) : calcBySymbol(item.table, item.factor, operatorSymbol)}</span>
 </div>
 </div>
 <Badge color="orange">Sai {item.count || 1} lần</Badge>
@@ -440,7 +441,7 @@ className="relative px-2 py-1.5 bg-white border border-yellow-100 shadow-sm roun
 
 <div className="flex-1 overflow-y-auto p-4 md:p-6 no-scrollbar bg-[#F8FAFC] flex flex-col items-center justify-start pt-2 md:justify-center md:pt-0 relative">
 <div style={{ gap: style.containerGap }} className="flex flex-col md:flex-row items-center md:items-stretch justify-center w-full transition-all duration-500">
-{/* --- VỊ TRÍ SỬA LỖI: Dùng calcBySymbol để hiển thị kết quả đúng cho Flashcard --- */}
+{/* --- VỊ TRÍ CẬP NHẬT: Thêm prop stats vào FlashCardBlock --- */}
 <FlashCardBlock
 table={table === 'all' ? Math.floor(Math.random()*8)+2 : table}
 factor={factor}
@@ -451,6 +452,7 @@ isPlaying={isPlaying}
 style={style}
 operatorSymbol={operatorSymbol}
 correctResult={calculateResult ? calculateResult(table, factor) : calcBySymbol(table, factor, operatorSymbol)}
+stats={stats}
 />
 <div style={style.card} className="flex flex-col transition-all duration-500 !h-auto md:!h-full">
 {isInputMode ? (
@@ -477,10 +479,9 @@ correctResult={calculateResult ? calculateResult(table, factor) : calcBySymbol(t
 </div>
 ) : (
 <div className="flex flex-col h-full gap-2 md:gap-4 animate-in slide-in-from-right">
-<div className="flex justify-between items-center bg-gray-50 px-4 py-2 rounded-2xl flex-shrink-0">
-<div className="flex items-center gap-2"><Icon name="ThumbsUp" size={18} className="text-green-500" /><span className="text-lg font-black text-green-600">{stats.correct}</span></div>
+{/* --- VỊ TRÍ CẬP NHẬT: Xóa ThumbsUp/Down, chỉ giữ lại thanh trạng thái --- */}
+<div className="flex justify-center items-center bg-gray-50 px-4 py-2 rounded-2xl flex-shrink-0">
 <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">Đang kiểm tra</div>
-<div className="flex items-center gap-2"><Icon name="ThumbsDown" size={18} className="text-red-400" /><span className="text-lg font-black text-red-400">{stats.incorrect}</span></div>
 </div>
 
 <div className="flex-1 min-h-0">
@@ -546,6 +547,7 @@ return (
 <div className="bg-white p-6 rounded-[2rem] shadow-lg w-full max-w-md text-center relative overflow-hidden border border-gray-100 animate-in slide-in-from-right">
 {feedback === 'correct' && <div className="absolute inset-0 bg-green-500/90 flex items-center justify-center z-20"><Icon name="Check" size={80} className="text-white animate-bounce" /></div>}
 {feedback === 'incorrect' && <div className="absolute inset-0 bg-red-500/90 flex flex-col items-center justify-center p-4 z-20"><Icon name="X" size={80} className="text-white" /><p className="text-white font-black mt-2">ĐÁP ÁN: {question.correctAnswer}</p></div>}
+{/* --- VỊ TRÍ CẬP NHẬT 4: Hiển thị operatorSymbol --- */}
 <div style={{ fontSize: `calc(${dynStyle.number.fontSize} * 1.5)` }} className="font-black text-gray-800">{question.num1} <span className="text-orange-500">{operatorSymbol}</span> {question.num2}</div>
 </div>
 <div className="grid grid-cols-2 gap-2 w-full max-w-md mt-4 animate-in slide-in-from-bottom duration-500">{question.answers.map((ans, idx) => (<button key={idx} onClick={() => onAnswer(ans)} disabled={feedback !== null} style={{ fontSize: `calc(${dynStyle.number.fontSize} * 0.5)` }} className={`py-4 rounded-xl font-black border-b-4 ${feedback ? 'bg-gray-50 text-gray-200' : 'bg-white text-blue-600 border-blue-50'}`}>{ans}</button>))}</div>
@@ -571,8 +573,6 @@ return (
 </div>
 );
 };
-
-
 /**
 * BLOCK 5: LOGIC (CUSTOM HOOKS)
 * Version: ver1.7
