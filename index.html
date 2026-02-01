@@ -96,8 +96,8 @@ active ? `bg-${color}-100 text-${color}-600 shadow-inner ring-2 ring-${color}-20
 );
 /**
 * BLOCK 3: KHỐI (BLOCKS)
-* Version: ver1.11
-* Cập nhật: Tăng khoảng cách trong FlashCardBlock (gap-2) và bỏ margin âm để nội dung thoáng hơn.
+* Version: ver1.12
+* Cập nhật: Thêm hiển thị thanh điểm số (stats) vào góc trên của FlashCardBlock.
 */
 const TableSelector = ({ current, onSelect }) => (
 <div className="flex justify-center items-center gap-1.5 overflow-x-auto no-scrollbar py-2 px-4 bg-white/50 border-b border-gray-100">
@@ -107,12 +107,19 @@ const TableSelector = ({ current, onSelect }) => (
 <button onClick={() => onSelect('all')} className={`flex-shrink-0 w-8 h-8 md:w-9 md:h-9 rounded-lg font-black text-xs transition-all border flex items-center justify-center ${current === 'all' ? 'bg-purple-600 text-white border-purple-600 scale-105 shadow-md' : 'bg-white text-purple-400 border-purple-100 hover:bg-purple-50'}`}><Icon name="Sigma" size={16} /></button>
 </div>
 );
-// --- VỊ TRÍ CẬP NHẬT: Thêm prop correctResult ---
-const FlashCardBlock = ({ table, factor, isInputMode, userAnswer, checkStatus, isPlaying, style, operatorSymbol = '×', correctResult }) => (
+// --- VỊ TRÍ CẬP NHẬT: Thêm prop stats ---
+const FlashCardBlock = ({ table, factor, isInputMode, userAnswer, checkStatus, isPlaying, style, operatorSymbol = '×', correctResult, stats }) => (
 <div
 style={style.card}
 className={`bg-white rounded-[2rem] shadow-lg border border-gray-100 flex flex-col items-center justify-start pt-10 md:justify-center md:pt-0 sync-scale relative overflow-hidden max-h-[35vh] md:max-h-none !h-auto md:!h-full ${isPlaying ? 'ring-4 ring-green-50 scale-[1.02]' : ''}`}
 >
+{/* --- VỊ TRÍ THÊM MỚI: Thanh điểm số nằm trên đầu thẻ --- */}
+{isInputMode && stats && (
+<div className="absolute top-3 left-0 w-full px-6 flex justify-between items-center text-xs font-black opacity-80 z-10">
+<div className="flex items-center gap-1 text-green-500"><Icon name="ThumbsUp" size={16}/> {stats.correct}</div>
+<div className="flex items-center gap-1 text-red-500"><Icon name="ThumbsDown" size={16}/> {stats.incorrect}</div>
+</div>
+)}
 {/* --- VỊ TRÍ CẬP NHẬT: Tăng gap-0 lên gap-2 --- */}
 <div className="flex flex-col items-center justify-center gap-2 w-full py-2 scale-75 md:scale-100 origin-top">
 {/* Hàng 1: Phép tính */}
