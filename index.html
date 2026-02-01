@@ -180,8 +180,8 @@ className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl border-b-4 border
 );
 /**
 * BLOCK 4: MÀN HÌNH (VIEWS)
-* Version: ver1.15
-* Cập nhật: Thay đổi bố cục StudyScreenView (Active Mode): Nút Kết thúc lên đầu, Bàn phím xuống dưới, Xóa thanh trạng thái.
+* Version: ver1.16
+* Cập nhật: StudyScreenView (Active): Đưa nút Kết thúc lên đỉnh, xóa thanh điểm số cũ để tránh trùng lặp.
 */
 const MenuScreenView = ({ onStartStudy, onStartCheck, onStartQuiz, onOpenSettings, onOpenNotebook, notebookCount, operation, setOperation, subtractionLimit, setSubtractionLimit }) => (
 <div className="h-full w-full overflow-y-auto no-scrollbar relative">
@@ -444,11 +444,11 @@ stats={stats}
 </div>
 ) : (
 <div className="flex flex-col h-full gap-2 md:gap-4 animate-in slide-in-from-right">
-{/* --- VỊ TRÍ CẬP NHẬT: Nút Kết thúc chuyển lên đầu --- */}
+{/* --- VỊ TRÍ CẬP NHẬT: Đưa nút Kết thúc lên đầu --- */}
 <button onClick={onSessionEnd} className="w-full py-3 bg-red-50 text-red-500 rounded-xl font-black border border-red-100 hover:bg-red-100 transition-all uppercase text-xs flex items-center justify-center gap-2 flex-shrink-0">
 <Icon name="Stop" size={16} fill="currentColor"/> Kết thúc bài kiểm tra
 </button>
-{/* --- Bàn phím ở dưới cùng --- */}
+{/* --- Bàn phím ở dưới --- */}
 <div className="flex-1 min-h-0">
 <KeypadBlock onNumber={onNumberInput} onDelete={onDeleteInput} onSubmit={onSubmitInput} style={style} />
 </div>
@@ -511,7 +511,7 @@ return (
 <button onClick={onSessionEnd} className="w-full max-w-md mt-6 py-3 bg-red-50 text-red-500 rounded-xl font-black border border-red-100 hover:bg-red-100 transition-all uppercase text-xs flex items-center justify-center gap-2">
 <Icon name="Stop" size={16} fill="currentColor"/> Kết thúc
 </button>
-</div>
+</>
 )}
 </div>
 </div>
