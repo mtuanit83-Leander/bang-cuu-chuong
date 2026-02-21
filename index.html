@@ -185,8 +185,8 @@ className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl border-b-4 border
 );
 /**
 * BLOCK 4: MÀN HÌNH (VIEWS)
-* Version: ver1.17
-* Cập nhật: Ẩn thanh TableSelector khi đang trong phiên kiểm tra (isCheckSessionActive).
+* Version: ver1.18
+* Cập nhật: Ẩn thanh TableSelector khi đang trong phiên Trắc nghiệm (isQuizSessionActive).
 */
 const MenuScreenView = ({ onStartStudy, onStartCheck, onStartQuiz, onOpenSettings, onOpenNotebook, notebookCount, operation, setOperation, subtractionLimit, setSubtractionLimit }) => (
 <div className="h-full w-full overflow-y-auto no-scrollbar relative">
@@ -307,6 +307,13 @@ Xác nhận
 </div>
 );
 };
+// Hàm tiện ích tính toán cục bộ dựa trên ký hiệu
+const calcBySymbol = (t, f, sym) => {
+if (sym === '+') return t + f;
+if (sym === '-') return t - f;
+if (sym === ':') return t / f;
+return t * f;
+};
 const NotebookScreenView = ({ isOpen, onClose, mistakes, onClear, dynStyle, onReviewStudy, onReviewCheck, onReviewQuiz, operatorSymbol = '×', calculateResult }) => {
 if (!isOpen) return null;
 return (
@@ -339,7 +346,7 @@ return (
 <div className="flex items-center gap-4">
 <span className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-black text-xs">{idx + 1}</span>
 <div className="font-black text-xl text-gray-800">
-{item.table} <span className="text-orange-400">{operatorSymbol}</span> {item.factor} <span className="text-blue-600">= {calculateResult ? calculateResult(item.table, item.factor) : (item.table * item.factor)}</span>
+{item.table} <span className="text-orange-400">{operatorSymbol}</span> {item.factor} <span className="text-blue-600">= {calculateResult ? calculateResult(item.table, item.factor) : calcBySymbol(item.table, item.factor, operatorSymbol)}</span>
 </div>
 </div>
 <Badge color="orange">Sai {item.count || 1} lần</Badge>
@@ -409,7 +416,6 @@ className="relative px-2 py-1.5 bg-white border border-yellow-100 shadow-sm roun
 </button>
 </div>
 </div>
-{/* --- VỊ TRÍ CẬP NHẬT: Ẩn thanh TableSelector khi đang làm bài kiểm tra --- */}
 {!isReviewMode && !isCheckSessionActive && <TableSelector current={selectedTable} onSelect={onSelectTable} />}
 <div className="flex-1 overflow-y-auto p-4 md:p-6 no-scrollbar bg-[#F8FAFC] flex flex-col items-center justify-start pt-2 md:justify-center md:pt-0 relative">
 <div style={{ gap: style.containerGap }} className="flex flex-col md:flex-row items-center md:items-stretch justify-center w-full transition-all duration-500">
@@ -489,7 +495,8 @@ return (
 <h2 className="text-xs font-black text-gray-500 uppercase">{isReviewMode ? "ÔN TẬP SỔ TAY" : `CÂU ${count + 1}/${TOTAL}`}</h2>
 <div className="flex items-center gap-2"><div className="flex items-center gap-1"><Icon name="ThumbsUp" size={16} className="text-green-500" /><span className="font-black text-green-600 text-sm">{score}</span></div><button onClick={openSettings} className="p-1.5 border rounded-lg bg-white text-blue-500"><Icon name="Settings" size={20} /></button></div>
 </div>
-{!isReviewMode && <TableSelector current={table} onSelect={onSelectTable} />}
+{/* --- CẬP NHẬT Ở ĐÂY: Ẩn thanh TableSelector khi đang làm bài trắc nghiệm --- */}
+{!isReviewMode && !isQuizSessionActive && <TableSelector current={table} onSelect={onSelectTable} />}
 <div className="flex-1 p-4 bg-[#F8FAFC] flex flex-col items-center justify-center">
 {!isQuizSessionActive ? (
 <div className="flex flex-col items-center justify-center h-full gap-6 animate-in fade-in w-full max-w-md">
