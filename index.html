@@ -534,8 +534,8 @@ return (
 };
 /**
 * BLOCK 5: LOGIC (CUSTOM HOOKS)
-* Version: ver1.9
-* Cập nhật: Nâng cấp Random Queue để lưu Cặp số (Bảng, Hệ số). Hỗ trợ vòng lặp 80 câu cho chế độ Tổng hợp.
+* Version: ver1.10
+* Cập nhật: Thêm hàng đợi độc lập (quizQueueRef) và hàm getNextQuizPair để hỗ trợ vòng lặp 80 câu cho chế độ Trắc nghiệm.
 */
 const useScaling = () => {
 const [scale, setScale] = useState(100);
@@ -576,14 +576,17 @@ const [currentDisplayTable, setCurrentDisplayTable] = useState(2);
 const [stepKey, setStepKey] = useState(0);
 const shuffledQueueRef = useRef([]);
 const iteratorRef = useRef(1);
+// --- VỊ TRÍ CẬP NHẬT: Hàng đợi dành riêng cho Trắc nghiệm ---
+const quizQueueRef = useRef([]);
 // Logic ôn tập
 const [isReviewing, setIsReviewing] = useState(false);
 const reviewQueue = useRef([]);
 const originalMistakes = useRef([]);
 // Reset về giá trị khởi đầu khi đổi cài đặt
 useEffect(() => {
-// --- VỊ TRÍ CẬP NHẬT: Xóa sạch hàng đợi ngẫu nhiên khi người dùng đổi bảng hoặc đổi phép tính ---
+// Xóa sạch hàng đợi ngẫu nhiên khi người dùng đổi bảng hoặc đổi phép tính
 shuffledQueueRef.current = [];
+quizQueueRef.current = []; // Reset cả hàng đợi trắc nghiệm
 // Xác định số bắt đầu: 0 cho cộng/trừ, 1 cho nhân/chia
 const startVal = (operation === '-' || operation === '+') ? 0 : 1;
 iteratorRef.current = startVal + 1; // Chuẩn bị cho bước tiếp theo
@@ -640,7 +643,6 @@ return;
 let tbl;
 let base;
 if (isRandomMode) {
-// --- VỊ TRÍ CẬP NHẬT: Khởi tạo mảng Cặp số (Bảng, Hệ số) ---
 if (shuffledQueueRef.current.length === 0) {
 const newQueue = [];
 // Nếu chọn Tổng hợp thì lấy đủ từ bảng 2 đến bảng 9. Nếu không thì lấy bảng hiện tại.
@@ -706,6 +708,55 @@ setStudyFactor(base);
 // Báo cho tầng giao diện biết đã sinh xong câu mới
 setStepKey(prev => prev + 1);
 }, [selectedTable, isRandomMode, isReviewing, operation, subtractionLimit]);
+// --- VỊ TRÍ CẬP NHẬT: Hàm xuất câu hỏi dành riêng cho Trắc nghiệm (Quiz) ---
+const getNextQuizPair = useCallback((targetTable) => {
+if (quizQueueRef.current.length === 0) {
+const newQueue = [];
+const tablesToUse = targetTable === 'all' ? [2, 3, 4, 5, 6, 7, 8, 9] : [targetTable];
+const startVal = (operation === '-' || operation === '+') ? 0 : 1;
+tablesToUse.forEach(t => {
+for (let f = startVal; f <= 10; f++) {
+if ((operation === 'x' || operation === ':') && f === 0) continue;
+newQueue.push({ t, f });
+}
+});
+for (let i = newQueue.length - 1; i > 0; i--) {
+const j = Math.floor(Math.random() * (i + 1));
+[newQueue[i], newQueue[j]] = [newQueue[j], newQueue[i]];
+}
+quizQueueRef.current = newQueue;
+}
+const popped = quizQueueRef.current.pop();
+const tbl = popped.t;
+const base = popped.f;
+// Chuẩn hóa num1, num2 theo đúng phép tính
+let finalNum1, finalNum2;
+switch (operation) {
+case 'x':
+case '+':
+finalNum1 = tbl;
+finalNum2 = base;
+break;
+case ':':
+finalNum1 = tbl * base;
+finalNum2 = tbl;
+break;
+case '-':
+if (subtractionLimit === 100) {
+const minMinuend = tbl;
+finalNum1 = Math.floor(Math.random() * (99 - minMinuend + 1)) + minMinuend;
+finalNum2 = tbl;
+} else {
+finalNum1 = tbl + base;
+finalNum2 = tbl;
+}
+break;
+default:
+finalNum1 = tbl;
+finalNum2 = base;
+}
+return { num1: finalNum1, num2: finalNum2 };
+}, [operation, subtractionLimit]);
 const calculateResult = useCallback((t, f) => {
 switch (operation) {
 case 'x': return t * f;
@@ -729,7 +780,8 @@ studyFactor, setStudyFactor,
 currentDisplayTable, nextStudyStep,
 startReview, endReview, isReviewing,
 calculateResult, getOperatorSymbol,
-stepKey
+stepKey,
+getNextQuizPair // Trả hàm ra cho Block 6
 };
 };
 const useNotebook = () => {
@@ -752,8 +804,10 @@ return { mistakes, addMistake, clearNotebook };
 };
 /**
 * BLOCK 6: ĐIỀU KHIỂN (CONTROLLER / APP)
-* Version: ver1.12
-* Cập nhật: Sửa lỗi treo ứng dụng triệt để bằng cách theo dõi `math.stepKey` thay vì theo dõi sự thay đổi của các con số.
+* Version: ver1.13
+* Cập nhật:
+* - Đồng bộ hàm sinh câu hỏi Trắc nghiệm (Quiz) với cơ chế 80 câu không trùng lặp từ Block 5.
+* - Gỡ bỏ hoàn toàn giới hạn 30 câu trong phần Trắc nghiệm (thành chế độ Vô hạn).
 */
 const App = () => {
 const [screen, setScreen] = useState('menu');
@@ -795,20 +849,18 @@ const randomMistake = notebook.mistakes[Math.floor(Math.random() * notebook.mist
 n1 = randomMistake.table;
 n2 = randomMistake.factor;
 } else {
-// Sinh ngẫu nhiên theo bảng đã chọn (selectedTable)
-if (selectedTable === 'all') {
-n1 = Math.floor(Math.random() * 8) + 2;
-} else {
-n1 = selectedTable;
+// --- CẬP NHẬT: Sử dụng hàm lấy câu hỏi không trùng lặp từ tầng Logic ---
+const pair = math.getNextQuizPair(selectedTable);
+n1 = pair.num1;
+n2 = pair.num2;
 }
-n2 = Math.floor(Math.random() * 10) + 1;
-}
-// Dùng calculateResult thay vì nhân cứng
+// Tính toán đáp án chính xác
 const correct = math.calculateResult(n1, n2);
+// Tạo 3 đáp án nhiễu
 let ans = [correct];
 while(ans.length < 4) {
-let w = Math.random() > 0.5 ? correct + Math.floor(Math.random()*5)+1 : Math.max(1, correct - Math.floor(Math.random()*5)-1);
-// Đảm bảo đáp án nhiễu không trùng và không âm (với phép trừ)
+let w = Math.random() > 0.5 ? correct + Math.floor(Math.random()*5)+1 : Math.max(0, correct - Math.floor(Math.random()*5)-1);
+// Đảm bảo đáp án nhiễu không trùng và không âm
 if(!ans.includes(w) && w >= 0) ans.push(w);
 }
 setQuizQuestion({ num1: n1, num2: n2, correctAnswer: correct, answers: ans.sort(() => Math.random() - 0.5) });
@@ -823,13 +875,10 @@ setQuizFeedback('incorrect');
 notebook.addMistake(quizQuestion.num1, quizQuestion.num2);
 }
 setTimeout(() => {
-if(quizCount + 1 >= 30) {
-handleQuizEnd();
-} else {
+// --- CẬP NHẬT: Gỡ bỏ giới hạn 30 câu, cho phép làm bài Vô hạn ---
 setQuizCount(c => c + 1);
 setQuizFeedback(null);
 generateQuizQuestion();
-}
 }, 1500);
 };
 const handleSessionStart = () => {
@@ -900,7 +949,6 @@ setTimeout(math.nextStudyStep, 1500);
 }
 return () => clearInterval(itv);
 }, [isPlaying, isInputMode, isCheckSessionActive, isTimeLimitEnabled, timeLimitValue, userAnswer, checkStatus, math.nextStudyStep, math.currentDisplayTable, math.studyFactor]);
-// --- VỊ TRÍ CẬP NHẬT: Thay thế bằng math.stepKey để đảm bảo luôn reset khi sang câu mới ---
 useEffect(() => { setUserAnswer(''); setCheckStatus(null); }, [math.stepKey]);
 return (
 <div className="min-h-screen bg-[#F0F4F8] flex items-center justify-center p-0 md:p-4">
@@ -982,7 +1030,7 @@ calculateResult={math.calculateResult}
 )}
 {screen === 'quiz' && (
 <QuizScreenView
-score={quizScore} count={quizCount} TOTAL={30} question={quizQuestion} feedback={quizFeedback}
+score={quizScore} count={quizCount} TOTAL="∞" question={quizQuestion} feedback={quizFeedback}
 onAnswer={handleQuizAnswer}
 goHome={() => {
 setScreen('menu');
