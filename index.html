@@ -535,8 +535,8 @@ return (
 };
 /**
 * BLOCK 5: LOGIC (CUSTOM HOOKS)
-* Version: ver1.7
-* Cập nhật: Sửa logic khởi tạo để phép trừ bắt đầu từ 0 (kết quả 0) và phép chia bắt đầu từ 1.
+* Version: ver1.8
+* Cập nhật: Thêm `stepKey` vào `useMathLogic` để khắc phục lỗi không reset được trạng thái khi câu hỏi ngẫu nhiên bị trùng lặp.
 */
 const useScaling = () => {
 const [scale, setScale] = useState(100);
@@ -573,13 +573,15 @@ return { scale, setScale, appSizeId, setAppSizeId, ratioMode, setRatioMode, appF
 const useMathLogic = (selectedTable, isRandomMode, operation, subtractionLimit) => {
 const [studyFactor, setStudyFactor] = useState(1);
 const [currentDisplayTable, setCurrentDisplayTable] = useState(2);
+// --- VỊ TRÍ CẬP NHẬT: Thêm state stepKey ---
+const [stepKey, setStepKey] = useState(0);
 const shuffledQueueRef = useRef([]);
 const iteratorRef = useRef(1);
 // Logic ôn tập
 const [isReviewing, setIsReviewing] = useState(false);
 const reviewQueue = useRef([]);
 const originalMistakes = useRef([]);
-// --- VỊ TRÍ CẬP NHẬT: Reset về giá trị khởi đầu đúng logic toán học ---
+// Reset về giá trị khởi đầu đúng logic toán học
 useEffect(() => {
 // Xác định số bắt đầu: 0 cho cộng/trừ, 1 cho nhân/chia
 const startVal = (operation === '-' || operation === '+') ? 0 : 1;
@@ -630,6 +632,8 @@ if (nextItem) {
 setCurrentDisplayTable(nextItem.table);
 setStudyFactor(nextItem.factor);
 }
+// --- VỊ TRÍ CẬP NHẬT: Tăng stepKey ---
+setStepKey(prev => prev + 1);
 return;
 }
 // 2. Chế độ Sinh số mới
@@ -680,6 +684,8 @@ default:
 setCurrentDisplayTable(tbl);
 setStudyFactor(base);
 }
+// --- VỊ TRÍ CẬP NHẬT: Tăng stepKey mỗi khi sinh xong câu hỏi ---
+setStepKey(prev => prev + 1);
 }, [selectedTable, isRandomMode, isReviewing, operation, subtractionLimit]);
 const calculateResult = useCallback((t, f) => {
 switch (operation) {
@@ -703,7 +709,8 @@ return {
 studyFactor, setStudyFactor,
 currentDisplayTable, nextStudyStep,
 startReview, endReview, isReviewing,
-calculateResult, getOperatorSymbol
+calculateResult, getOperatorSymbol,
+stepKey // --- VỊ TRÍ CẬP NHẬT: Trả về stepKey để Block 6 sử dụng ---
 };
 };
 const useNotebook = () => {
@@ -726,8 +733,8 @@ return { mistakes, addMistake, clearNotebook };
 };
 /**
 * BLOCK 6: ĐIỀU KHIỂN (CONTROLLER / APP)
-* Version: ver1.11
-* Cập nhật: Sửa lỗi treo ứng dụng trong chế độ Kiểm tra bằng cách thêm math.currentDisplayTable vào dependency của useEffect reset.
+* Version: ver1.12
+* Cập nhật: Sửa lỗi treo ứng dụng triệt để bằng cách theo dõi `math.stepKey` thay vì theo dõi sự thay đổi của các con số.
 */
 const App = () => {
 const [screen, setScreen] = useState('menu');
@@ -874,8 +881,8 @@ setTimeout(math.nextStudyStep, 1500);
 }
 return () => clearInterval(itv);
 }, [isPlaying, isInputMode, isCheckSessionActive, isTimeLimitEnabled, timeLimitValue, userAnswer, checkStatus, math.nextStudyStep, math.currentDisplayTable, math.studyFactor]);
-// --- VỊ TRÍ SỬA LỖI: Thêm math.currentDisplayTable vào dependency để reset khi số đầu thay đổi ---
-useEffect(() => { setUserAnswer(''); setCheckStatus(null); }, [math.studyFactor, math.currentDisplayTable]);
+// --- VỊ TRÍ CẬP NHẬT: Thay thế bằng math.stepKey để đảm bảo luôn reset khi sang câu mới ---
+useEffect(() => { setUserAnswer(''); setCheckStatus(null); }, [math.stepKey]);
 return (
 <div className="min-h-screen bg-[#F0F4F8] flex items-center justify-center p-0 md:p-4">
 <div className={`w-full ${scaleSudo.appFrameClass} bg-white md:rounded-[3rem] shadow-2xl relative overflow-hidden border-2 md:border-[12px] border-white flex flex-col`}>
