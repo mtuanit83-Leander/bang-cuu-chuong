@@ -185,8 +185,8 @@ className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl border-b-4 border
 );
 /**
 * BLOCK 4: MÀN HÌNH (VIEWS)
-* Version: ver1.18
-* Cập nhật: Ẩn thanh TableSelector khi đang trong phiên Trắc nghiệm (isQuizSessionActive).
+* Version: ver1.19
+* Cập nhật: Chuyển nút Kết thúc lên trên cùng (phía trên thẻ câu hỏi) trong màn hình Trắc nghiệm (Quiz).
 */
 const MenuScreenView = ({ onStartStudy, onStartCheck, onStartQuiz, onOpenSettings, onOpenNotebook, notebookCount, operation, setOperation, subtractionLimit, setSubtractionLimit }) => (
 <div className="h-full w-full overflow-y-auto no-scrollbar relative">
@@ -495,7 +495,6 @@ return (
 <h2 className="text-xs font-black text-gray-500 uppercase">{isReviewMode ? "ÔN TẬP SỔ TAY" : `CÂU ${count + 1}/${TOTAL}`}</h2>
 <div className="flex items-center gap-2"><div className="flex items-center gap-1"><Icon name="ThumbsUp" size={16} className="text-green-500" /><span className="font-black text-green-600 text-sm">{score}</span></div><button onClick={openSettings} className="p-1.5 border rounded-lg bg-white text-blue-500"><Icon name="Settings" size={20} /></button></div>
 </div>
-{/* --- CẬP NHẬT Ở ĐÂY: Ẩn thanh TableSelector khi đang làm bài trắc nghiệm --- */}
 {!isReviewMode && !isQuizSessionActive && <TableSelector current={table} onSelect={onSelectTable} />}
 <div className="flex-1 p-4 bg-[#F8FAFC] flex flex-col items-center justify-center">
 {!isQuizSessionActive ? (
@@ -513,15 +512,16 @@ return (
 </div>
 ) : (
 <>
+{/* --- VỊ TRÍ CẬP NHẬT: Nút Kết thúc được chuyển lên trên thẻ câu hỏi --- */}
+<button onClick={onSessionEnd} className="w-full max-w-md mb-4 py-3 bg-red-50 text-red-500 rounded-xl font-black border border-red-100 hover:bg-red-100 transition-all uppercase text-xs flex items-center justify-center gap-2">
+<Icon name="Stop" size={16} fill="currentColor"/> Kết thúc
+</button>
 <div className="bg-white p-6 rounded-[2rem] shadow-lg w-full max-w-md text-center relative overflow-hidden border border-gray-100 animate-in slide-in-from-right">
 {feedback === 'correct' && <div className="absolute inset-0 bg-green-500/90 flex items-center justify-center z-20"><Icon name="Check" size={80} className="text-white animate-bounce" /></div>}
 {feedback === 'incorrect' && <div className="absolute inset-0 bg-red-500/90 flex flex-col items-center justify-center p-4 z-20"><Icon name="X" size={80} className="text-white" /><p className="text-white font-black mt-2">ĐÁP ÁN: {question.correctAnswer}</p></div>}
 <div style={{ fontSize: `calc(${dynStyle.number.fontSize} * 1.5)` }} className="font-black text-gray-800">{question.num1} <span className="text-orange-500">{operatorSymbol}</span> {question.num2}</div>
 </div>
 <div className="grid grid-cols-2 gap-2 w-full max-w-md mt-4 animate-in slide-in-from-bottom duration-500">{question.answers.map((ans, idx) => (<button key={idx} onClick={() => onAnswer(ans)} disabled={feedback !== null} style={{ fontSize: `calc(${dynStyle.number.fontSize} * 0.5)` }} className={`py-4 rounded-xl font-black border-b-4 ${feedback ? 'bg-gray-50 text-gray-200' : 'bg-white text-blue-600 border-blue-50'}`}>{ans}</button>))}</div>
-<button onClick={onSessionEnd} className="w-full max-w-md mt-6 py-3 bg-red-50 text-red-500 rounded-xl font-black border border-red-100 hover:bg-red-100 transition-all uppercase text-xs flex items-center justify-center gap-2">
-<Icon name="Stop" size={16} fill="currentColor"/> Kết thúc
-</button>
 </>
 )}
 </div>
